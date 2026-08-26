@@ -7,15 +7,89 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Inventario y Reservas</h1>
-        <div id="lista-productos" class="productos-grid">
-            <!-- Los productos se cargarán aquí desde Supabase -->
-            <p>Cargando productos...</p>
+    
+    <!-- 1. PANTALLA DE LOGIN Y REGISTRO -->
+    <div id="auth-container" class="container">
+        <h2>Bienvenido</h2>
+        <p>Inicia sesión o regístrate para ver los productos</p>
+        <input type="email" id="email" placeholder="Tu correo electrónico">
+        <input type="password" id="password" placeholder="Tu contraseña (mínimo 6 letras/números)">
+        <div class="auth-buttons">
+            <button id="btn-login">Entrar</button>
+            <button id="btn-register" class="btn-verde">Registrarme</button>
+        </div>
+        <p id="auth-mensaje" class="mensaje-error"></p>
+    </div>
+
+    <!-- 2. PANTALLA PRINCIPAL -->
+    <div id="app-container" class="container oculto">
+        
+        <div class="header-app">
+            <h1>Inventario y Reservas</h1>
+            <button id="btn-logout" class="btn-rojo">Cerrar sesión</button>
+        </div>
+
+        <!-- PANEL ADMIN: AGREGAR PRODUCTOS -->
+        <div id="admin-panel" class="oculto" style="background: #fff3cd; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ffeeba;">
+            <h3 style="margin-top: 0; color: #856404;">🛠️ Panel de Administración - Agregar Productos</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <input type="text" id="nuevo-nombre" placeholder="Nombre del producto">
+                <input type="text" id="nuevo-descripcion" placeholder="Breve descripción">
+                <input type="number" id="nuevo-precio" placeholder="Precio ($)" min="0" style="width: 100px;">
+                <input type="number" id="nuevo-stock" placeholder="Stock" min="1" style="width: 80px;">
+                <input type="text" id="nuevo-imagen" placeholder="URL de la imagen (Opcional)">
+                <button id="btn-agregar" class="btn-verde">Agregar Producto</button>
+            </div>
+        </div>
+
+        <div class="layout-principal">
+            
+            <!-- COLUMNA IZQUIERDA: Productos -->
+            <div id="lista-productos" class="productos-grid">
+                <p>Cargando productos...</p>
+            </div>
+
+            <!-- COLUMNA DERECHA: Carrito y Pedidos -->
+            <div class="columna-derecha">
+                
+                <!-- CARRITO -->
+                <div id="carrito-panel" class="carrito-box">
+                    <h2 style="margin-top: 0; color: #2c3e50;">🛒 Mi Carrito</h2>
+                    <div id="contenido-carrito">
+                        <p style="color: #7f8c8d; text-align: center;">El carrito está vacío</p>
+                    </div>
+                    <div class="carrito-footer">
+                        <h3 style="margin: 0 0 15px 0; text-align: right;">Total: $<span id="total-carrito">0.00</span></h3>
+                        <button id="btn-confirmar-reserva" class="btn-verde" style="width: 100%; font-size: 1.1em; padding: 12px;" disabled>Confirmar Reserva</button>
+                    </div>
+                </div>
+
+                <!-- PEDIDOS CLIENTE (Solo visible para usuarios normales) -->
+                <div id="cliente-pedidos" class="oculto carrito-box" style="margin-top: 20px; background: #fdfefe; border: 1px solid #d5dbdb; padding: 15px;">
+                    <h3 style="margin-top: 0; color: #2c3e50;">📋 Mis Pedidos</h3>
+                    <div id="lista-mis-pedidos" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 5px;">
+                        <p style="color: #666;">Cargando tus pedidos...</p>
+                    </div>
+                </div>
+
+                <!-- PEDIDOS ADMIN (Solo visible para ti) -->
+                <div id="admin-pedidos" class="oculto carrito-box" style="margin-top: 20px; background: #e8f4f8; border: 1px solid #bce8f1; padding: 15px;">
+                    <h3 style="margin-top: 0; color: #31708f;">📦 Pedidos de Clientes</h3>
+                    <select id="filtro-pedidos" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold;">
+                        <option value="Todos">Ver Todos</option>
+                        <option value="Pendiente">Solo Pendientes</option>
+                        <option value="Completado">Confirmados ✅</option>
+                        <option value="Cancelado">Cancelados ❌</option>
+                    </select>
+                    <div id="lista-pedidos" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                        <p style="color: #666;">Cargando pedidos...</p>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <!-- Importamos nuestro script como módulo para poder usar Supabase -->
     <script type="module" src="app.js"></script>
 </body>
 </html>

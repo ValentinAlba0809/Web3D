@@ -7,3 +7,53 @@ button { background: #3498db; color: white; border: none; padding: 10px 15px; bo
 button:hover { background: #2980b9; }
 button:disabled { background: #ccc; cursor: not-allowed; }
 input { width: 60px; padding: 8px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; }
+
+/* Nuevos estilos para el Login y Header */
+.oculto { display: none !important; }
+.header-app { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+.auth-buttons { display: flex; gap: 10px; margin-top: 15px; }
+.btn-verde { background: #27ae60; }
+.btn-verde:hover { background: #2ecc71; }
+.btn-rojo { background: #e74c3c; }
+.btn-rojo:hover { background: #c0392b; }
+.mensaje-error { color: #e74c3c; font-weight: bold; margin-top: 10px; }
+
+/* Para que los inputs del login se vean mejor */
+#auth-container input { display: block; width: 90%; margin-top: 10px; margin-bottom: 10px; padding: 10px; }
+
+/* Estilos para los nuevos productos con imagen */
+.producto-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; display: flex; gap: 15px; align-items: center; }
+.producto-img { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+.producto-info { flex-grow: 1; }
+.producto-precio { font-size: 1.3em; font-weight: bold; color: #27ae60; margin: 5px 0; }
+.producto-acciones { text-align: right; min-width: 150px; }
+
+/* Layout del E-commerce (Productos + Carrito) */
+.layout-principal { display: flex; gap: 20px; align-items: flex-start; margin-top: 20px; }
+.productos-grid { flex: 2; display: grid; gap: 15px; }
+
+/* Caja del carrito flotante */
+.carrito-box { flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; position: sticky; top: 20px; min-width: 280px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.carrito-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+.carrito-item-info h4 { margin: 0; font-size: 1em; color: #333; }
+.carrito-item-info p { margin: 5px 0 0 0; color: #666; font-size: 0.9em; }
+.btn-quitar { background: #e74c3c; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; }
+.carrito-footer { margin-top: 15px; border-top: 2px solid #eee; padding-top: 15px; }
+
+/* Para que se vea bien en celulares (Responsive Design) */
+@media (max-width: 768px) {
+    .layout-principal { flex-direction: column; }
+    .carrito-box { width: 100%; box-sizing: border-box; position: static; }
+    .producto-card { flex-direction: column; text-align: center; }
+    .producto-img { width: 100%; height: 200px; }
+}
+
+/* Nueva Columna Derecha */
+.columna-derecha { flex: 1; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 20px; }
+
+/* Quitamos el sticky del carrito individual porque ahora lo maneja la columna */
+.carrito-box { position: static; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+/* Para embellecer la barra de scroll de los pedidos */
+#lista-pedidos::-webkit-scrollbar { width: 6px; }
+#lista-pedidos::-webkit-scrollbar-thumb { background: #bce8f1; border-radius: 4px; }
