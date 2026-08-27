@@ -3,67 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Reservas</title>
+    <title>Tienda 3D</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     
     <!-- 1. PANTALLA DE LOGIN Y REGISTRO -->
     <div id="auth-container" class="container">
-        <h2>Bienvenido</h2>
-        <p>Inicia sesión o regístrate para ver los productos</p>
-        <input type="email" id="email" placeholder="Tu correo electrónico">
-        <input type="password" id="password" placeholder="Tu contraseña (mínimo 6 letras/números)">
-        <div class="auth-buttons">
-            <button id="btn-login">Entrar</button>
-            <button id="btn-register" class="btn-verde">Registrarme</button>
+        <h2 id="auth-titulo">Iniciar Sesión</h2>
+        <p id="auth-subtitulo">Ingresa para ver tus pedidos y reservar</p>
+        
+        <!-- Campos exclusivos de registro -->
+        <div id="campos-registro" class="oculto">
+            <input type="text" id="reg-nombre" placeholder="Nombre">
+            <input type="text" id="reg-apellido" placeholder="Apellido">
         </div>
-        <p id="auth-mensaje" class="mensaje-error"></p>
+
+        <input type="email" id="email" placeholder="Tu correo electrónico">
+        <input type="password" id="password" placeholder="Tu contraseña">
+        
+        <div class="auth-buttons">
+            <button id="btn-login" class="btn-verde">Entrar</button>
+            <button id="btn-register" class="btn-verde oculto">Crear Cuenta</button>
+            <button id="btn-toggle-auth" style="background: transparent; color: #3483fa;">¿No tienes cuenta? Regístrate</button>
+            <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+            <button id="btn-invitado" style="background: #f5f5f5; color: #333; border: 1px solid #ccc;">Ver productos sin registrarme</button>
+        </div>
+        <p id="auth-mensaje" class="mensaje-error" style="margin-top: 15px;"></p>
     </div>
 
     <!-- 2. PANTALLA PRINCIPAL -->
     <div id="app-container" class="container oculto">
         
         <div class="header-app">
-            <h1>Inventario y Reservas</h1>
-            <button id="btn-logout" class="btn-rojo">Cerrar sesión</button>
+            <h1>Tienda 3D</h1>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-perfil" style="background: white; color: #333;">👤 Mi Perfil</button>
+                <button id="btn-logout" class="btn-rojo">Cerrar sesión</button>
+            </div>
         </div>
 
-        <!-- PANEL ADMIN: AGREGAR / EDITAR PRODUCTOS (Estilo ML con Colores) -->
+        <!-- MODAL DE PERFIL (Oculto por defecto) -->
+        <div id="perfil-modal" class="oculto" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #ddd;">
+            <h3 style="margin-top: 0;">👤 Mis Datos</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="text" id="perfil-nombre" placeholder="Tu Nombre" style="flex: 1;">
+                <input type="text" id="perfil-apellido" placeholder="Tu Apellido" style="flex: 1;">
+            </div>
+            <p style="color: #666; font-size: 14px;">Correo: <strong id="perfil-email"></strong></p>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-guardar-perfil" class="btn-verde">Guardar Cambios</button>
+                <button id="btn-cerrar-perfil" class="btn-rojo">Cerrar</button>
+            </div>
+        </div>
+
+        <!-- PANEL ADMIN: AGREGAR / EDITAR PRODUCTOS -->
         <div id="admin-panel" class="oculto" style="background: white; padding: 25px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.12);">
             <h3 id="titulo-panel-admin" style="margin-top: 0; font-size: 20px; font-weight: 400; color: #333; border-bottom: 1px solid #eee; padding-bottom: 15px;">Publicar Nuevo Producto 3D</h3>
-            
-            <!-- Campo oculto para saber qué producto estamos editando -->
             <input type="hidden" id="edit-producto-id" value="">
-
             <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-                <!-- Datos básicos -->
                 <div style="flex: 1; min-width: 280px;">
                     <label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Datos de la pieza</label>
                     <input type="text" id="nuevo-nombre" placeholder="Ej: Soporte para Joystick PS5" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px;">
                     <input type="text" id="nuevo-descripcion" placeholder="Descripción (Ej: Impreso en PLA, alta resistencia)" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px;">
                     <input type="number" id="nuevo-precio" placeholder="Precio final ($)" min="0" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px;">
-                    
                     <label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Sube una foto (.jpg, .png)</label>
                     <input type="file" id="nuevo-imagen" accept="image/*" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #fff;">
                 </div>
-                
-                <!-- Sección de Colores y Stock -->
                 <div style="flex: 1; min-width: 280px; background: #f5f5f5; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
                     <label style="font-size: 14px; color: #666; margin-bottom: 10px; display: block;">Variantes de Color y Stock</label>
-                    
                     <div id="contenedor-colores" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
                         <div class="color-item" style="display: flex; gap: 10px;">
                             <input type="text" placeholder="Color (Ej: PLA Blanco)" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
                             <input type="number" placeholder="Stock" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
                         </div>
                     </div>
-                    
                     <button id="btn-add-color" style="background: transparent; color: #3483fa; width: 100%; padding: 10px; border: 1px dashed #3483fa; border-radius: 6px; margin-bottom: 10px;">+ Añadir otro color</button>
                     <p style="font-size: 12px; color: #999; margin: 0; text-align: center;">El stock total se calculará automáticamente.</p>
                 </div>
             </div>
-            
             <div style="display: flex; gap: 10px; margin-top: 25px;">
                 <button id="btn-agregar" class="btn-verde" style="flex: 2; padding: 15px; font-size: 16px;">Publicar Producto</button>
                 <button id="btn-cancelar-edicion" class="btn-rojo oculto" style="flex: 1; padding: 15px; font-size: 16px;">Cancelar Edición</button>
@@ -71,15 +89,13 @@
         </div>
 
         <div class="layout-principal">
-            
             <!-- COLUMNA IZQUIERDA: Productos -->
             <div id="lista-productos" class="productos-grid">
                 <p>Cargando productos...</p>
             </div>
 
             <!-- COLUMNA DERECHA: Carrito y Pedidos -->
-            <div class="columna-derecha">
-                
+            <div id="panel-derecho-usuario" class="columna-derecha">
                 <!-- CARRITO -->
                 <div id="carrito-panel" class="carrito-box">
                     <h2 style="margin-top: 0; color: #2c3e50;">🛒 Mi Carrito</h2>
@@ -92,7 +108,7 @@
                     </div>
                 </div>
 
-                <!-- PEDIDOS CLIENTE (Solo visible para usuarios normales) -->
+                <!-- PEDIDOS CLIENTE -->
                 <div id="cliente-pedidos" class="oculto carrito-box" style="margin-top: 20px; background: #fdfefe; border: 1px solid #d5dbdb; padding: 15px;">
                     <h3 style="margin-top: 0; color: #2c3e50;">📋 Mis Pedidos</h3>
                     <div id="lista-mis-pedidos" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 5px;">
@@ -100,7 +116,7 @@
                     </div>
                 </div>
 
-                <!-- PEDIDOS ADMIN (Solo visible para ti) -->
+                <!-- PEDIDOS ADMIN -->
                 <div id="admin-pedidos" class="oculto carrito-box" style="margin-top: 20px; background: #e8f4f8; border: 1px solid #bce8f1; padding: 15px;">
                     <h3 style="margin-top: 0; color: #31708f;">📦 Pedidos de Clientes</h3>
                     <select id="filtro-pedidos" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold;">
@@ -113,7 +129,6 @@
                         <p style="color: #666;">Cargando pedidos...</p>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>

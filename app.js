@@ -10,12 +10,51 @@ const authMensaje = document.getElementById('auth-mensaje');
 const contenedorProductos = document.getElementById('lista-productos');
 
 let esAdmin = false;
+let modoInvitado = false; // <-- Nueva variable para saber si entró a mirar
 let productosActuales = []; 
 let carrito = []; 
 let todosLosPedidos = [];
 
 // ==========================================
-// AUTENTICACIÓN
+// INTERFAZ DE LOGIN / REGISTRO
+// ==========================================
+let modoRegistro = false;
+document.getElementById('btn-toggle-auth').addEventListener('click', () => {
+    modoRegistro = !modoRegistro;
+    document.getElementById('campos-registro').classList.toggle('oculto');
+    
+    if (modoRegistro) {
+        document.getElementById('auth-titulo').textContent = "Crear Cuenta";
+        document.getElementById('auth-subtitulo').textContent = "Completa tus datos para registrarte";
+        document.getElementById('btn-login').classList.add('oculto');
+        document.getElementById('btn-register').classList.remove('oculto');
+        document.getElementById('btn-toggle-auth').textContent = "¿Ya tienes cuenta? Inicia sesión";
+    } else {
+        document.getElementById('auth-titulo').textContent = "Iniciar Sesión";
+        document.getElementById('auth-subtitulo').textContent = "Ingresa para ver tus pedidos y reservar";
+        document.getElementById('btn-login').classList.remove('oculto');
+        document.getElementById('btn-register').classList.add('oculto');
+        document.getElementById('btn-toggle-auth').textContent = "¿No tienes cuenta? Regístrate";
+    }
+});
+
+// Entrar como invitado
+document.getElementById('btn-invitado').addEventListener('click', () => {
+    modoInvitado = true;
+    authContainer.classList.add('oculto');
+    appContainer.classList.remove('oculto');
+    
+    // Ocultamos paneles de usuario/admin
+    document.getElementById('admin-panel').classList.add('oculto');
+    document.getElementById('panel-derecho-usuario').classList.add('oculto');
+    document.getElementById('btn-perfil').classList.add('oculto');
+    document.getElementById('btn-logout').textContent = "Volver al Login";
+    
+    cargarProductos();
+});
+
+// ==========================================
+// AUTENTICACIÓN Y PERFIL
 // ==========================================
 async function verificarSesion() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -24,8 +63,18 @@ async function verificarSesion() {
     const clientePedidos = document.getElementById('cliente-pedidos');
 
     if (session) {
+        modoInvitado = false;
         authContainer.classList.add('oculto');
         appContainer.classList.remove('oculto');
+        document.getElementById('panel-derecho-usuario').classList.remove('oculto');
+        document.getElementById('btn-perfil').classList.remove('oculto');
+        document.getElementById('btn-logout').textContent = "Cerrar sesión";
+        
+        // Cargar datos en el modal de perfil
+        const meta = session.user.user_metadata || {};
+        document.getElementById('perfil-nombre').value = meta.nombre || '';
+        document.getElementById('perfil-apellido').value = meta.apellido || '';
+        document.getElementById('perfil-email').textContent = session.user.email;
 
         if (session.user.email === 'valentin@admin.com') {
             adminPanel.classList.remove('oculto');
@@ -50,14 +99,31 @@ async function verificarSesion() {
 document.getElementById('btn-register').addEventListener('click', async () => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    authMensaje.textContent = "Registrando...";
-    const { error } = await supabase.auth.signUp({ email, password });
+    const nombre = document.getElementById('reg-nombre').value;
+    const apellido = document.getElementById('reg-apellido').value;
+
+    if (!nombre || !apellido || !email || !password) {
+        authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Por favor, completa todos los campos."; return;
+    }
+
+    authMensaje.style.color = "#333"; authMensaje.textContent = "Registrando...";
+    
+    const { data, error } = await supabase.auth.signUp({ 
+        email, password,
+        options: { data: { nombre: nombre, apellido: apellido } } // Guardamos Nombre y Apellido
+    });
+
     if (error) {
         authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Error: " + error.message;
     } else {
-        authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Iniciando sesión...";
-        await supabase.auth.signInWithPassword({ email, password });
-        verificarSesion(); 
+        // Si Supabase pide confirmar correo, la sesión viene vacía
+        if (!data.session) {
+            authMensaje.style.color = "green"; 
+            authMensaje.textContent = "¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar tu cuenta antes de entrar.";
+        } else {
+            authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Iniciando sesión...";
+            verificarSesion(); 
+        }
     }
 });
 
@@ -66,19 +132,50 @@ document.getElementById('btn-login').addEventListener('click', async () => {
     const password = document.getElementById('password').value;
     authMensaje.textContent = "Verificando...";
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Error: Credenciales incorrectas."; } 
+    if (error) { 
+        authMensaje.style.color = "#e74c3c"; 
+        authMensaje.textContent = (error.message.includes("Email not confirmed")) ? "Debes verificar tu correo antes de entrar." : "Credenciales incorrectas."; 
+    } 
     else { authMensaje.textContent = ""; verificarSesion(); }
 });
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    if (!modoInvitado) await supabase.auth.signOut();
     document.getElementById('email').value = '';
     document.getElementById('password').value = '';
+    modoInvitado = false;
     carrito = []; renderizarCarrito(); verificarSesion(); 
 });
 
 // ==========================================
-// PRODUCTOS Y COLORES EN PANTALLA
+// LÓGICA DEL PERFIL
+// ==========================================
+document.getElementById('btn-perfil').addEventListener('click', () => {
+    document.getElementById('perfil-modal').classList.toggle('oculto');
+});
+document.getElementById('btn-cerrar-perfil').addEventListener('click', () => {
+    document.getElementById('perfil-modal').classList.add('oculto');
+});
+
+document.getElementById('btn-guardar-perfil').addEventListener('click', async () => {
+    const nuevoNombre = document.getElementById('perfil-nombre').value;
+    const nuevoApellido = document.getElementById('perfil-apellido').value;
+    
+    const btn = document.getElementById('btn-guardar-perfil');
+    btn.textContent = "Guardando..."; btn.disabled = true;
+
+    const { data, error } = await supabase.auth.updateUser({
+        data: { nombre: nuevoNombre, apellido: nuevoApellido }
+    });
+
+    if (error) alert("Error al guardar: " + error.message);
+    else alert("¡Perfil actualizado con éxito!");
+    
+    btn.textContent = "Guardar Cambios"; btn.disabled = false;
+});
+
+// ==========================================
+// PRODUCTOS EN PANTALLA (CON MODO INVITADO)
 // ==========================================
 async function cargarProductos() {
     const { data: productos, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
@@ -93,7 +190,6 @@ function renderizarProductos(productos) {
         const div = document.createElement('div');
         div.className = 'producto-card';
         
-        // BOTONES DE ADMIN (AHORA INCLUYE EDITAR)
         const botonesAdmin = esAdmin ? `
             <div style="display: flex; gap: 5px; margin-top: 10px;">
                 <button onclick="window.editarProducto(${producto.id})" class="btn-verde" style="flex: 1; background: #f39c12; padding: 8px;">✏️ Editar</button>
@@ -119,6 +215,13 @@ function renderizarProductos(productos) {
             selectColoresHTML = `<select id="color-${producto.id}" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px;">${opciones}</select>`;
         }
 
+        // Si es invitado, el botón cambia de función
+        let accionBoton = modoInvitado 
+            ? `onclick="alert('Debes iniciar sesión o registrarte para poder reservar productos.'); document.getElementById('btn-logout').click();"` 
+            : `onclick="window.agregarAlCarrito(${producto.id})"`;
+            
+        if (modoInvitado && producto.stock > 0) textoBoton = 'Inicia sesión para comprar';
+
         div.innerHTML = `
             <img src="${producto.imagen_url || 'https://via.placeholder.com/300x250'}" alt="${producto.nombre}" class="producto-img" onerror="this.src='https://via.placeholder.com/300x250?text=Sin+Imagen'">
             <div class="producto-info">
@@ -129,8 +232,8 @@ function renderizarProductos(productos) {
             </div>
             <div class="producto-acciones">
                 ${selectColoresHTML}
-                <input type="number" id="cant-${producto.id}" value="1" min="1" max="${producto.stock}" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
-                <button onclick="window.agregarAlCarrito(${producto.id})" ${botonDeshabilitado} class="btn-verde" style="width: 100%;">
+                <input type="number" id="cant-${producto.id}" value="1" min="1" max="${producto.stock}" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;" ${modoInvitado ? 'disabled' : ''}>
+                <button ${accionBoton} ${botonDeshabilitado} class="btn-verde" style="width: 100%;">
                     ${textoBoton}
                 </button>
                 ${botonesAdmin}
@@ -141,8 +244,10 @@ function renderizarProductos(productos) {
 }
 
 // ==========================================
-// CARRITO CON VARIANTES DE COLOR
+// CARRITO, PEDIDOS Y PANEL DE ADMIN 
+// (EL RESTO DEL CÓDIGO SE MANTIENE IGUAL)
 // ==========================================
+
 window.agregarAlCarrito = function(id) {
     const producto = productosActuales.find(p => p.id === id);
     const inputCantidad = document.getElementById(`cant-${id}`);
@@ -168,8 +273,7 @@ window.agregarAlCarrito = function(id) {
     const nombreCart = colorSeleccionado ? `${producto.nombre} (${colorSeleccionado})` : producto.nombre;
 
     carrito.push({ cartItemId: idEnCarrito, id: producto.id, color: colorSeleccionado, nombre: nombreCart, precio: producto.precio, cantidad: cantidadPedida, subtotal: producto.precio * cantidadPedida });
-    inputCantidad.value = 1;
-    renderizarCarrito();
+    inputCantidad.value = 1; renderizarCarrito();
 }
 
 window.quitarDelCarrito = function(index) { carrito.splice(index, 1); renderizarCarrito(); }
@@ -178,7 +282,6 @@ function renderizarCarrito() {
     const contenedor = document.getElementById('contenido-carrito');
     const spanTotal = document.getElementById('total-carrito');
     const btnConfirmar = document.getElementById('btn-confirmar-reserva');
-    
     contenedor.innerHTML = ''; let total = 0;
 
     if (carrito.length === 0) {
@@ -195,9 +298,6 @@ function renderizarCarrito() {
     spanTotal.textContent = total.toFixed(2); btnConfirmar.disabled = false;
 }
 
-// ==========================================
-// PROCESAR Y GESTIONAR PEDIDOS
-// ==========================================
 document.getElementById('btn-confirmar-reserva').addEventListener('click', async () => {
     if (carrito.length === 0) return;
     const btnConfirmar = document.getElementById('btn-confirmar-reserva');
@@ -206,8 +306,12 @@ document.getElementById('btn-confirmar-reserva').addEventListener('click', async
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
     const { data: { session } } = await supabase.auth.getSession();
     
+    // Agregamos el nombre real al pedido para que tú lo veas mejor
+    const nombreCliente = session.user.user_metadata?.nombre || session.user.email;
+
     const { error: errorPedido } = await supabase.from('pedidos').insert([{
-        usuario_email: session.user.email, productos_comprados: carrito, total: total, estado: 'Pendiente'
+        usuario_email: nombreCliente + " (" + session.user.email + ")", 
+        productos_comprados: carrito, total: total, estado: 'Pendiente'
     }]);
 
     if (errorPedido) { alert("Error al procesar reserva."); btnConfirmar.textContent = "Confirmar Reserva"; btnConfirmar.disabled = false; return; }
@@ -312,60 +416,45 @@ async function cargarMisPedidos(email) {
     });
 }
 
-// ==========================================
 // ADMIN: EDITAR Y PUBLICAR PRODUCTO
-// ==========================================
 window.eliminarProducto = async function(id) {
     if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
         const { error } = await supabase.from('productos').delete().eq('id', id);
         if (!error) cargarProductos(); 
     }
 }
-
-// 1. Botón "Editar" en la tarjeta
 window.editarProducto = function(id) {
     const producto = productosActuales.find(p => p.id === id);
     if (!producto) return;
 
-    // Llenamos el formulario
     document.getElementById('edit-producto-id').value = producto.id;
     document.getElementById('titulo-panel-admin').textContent = "✏️ Editar Producto 3D";
     document.getElementById('nuevo-nombre').value = producto.nombre;
     document.getElementById('nuevo-descripcion').value = producto.descripcion;
     document.getElementById('nuevo-precio').value = producto.precio;
 
-    // Llenamos los colores
     const contenedorColores = document.getElementById('contenedor-colores');
     contenedorColores.innerHTML = '';
     
     if (producto.stock_colores && Object.keys(producto.stock_colores).length > 0) {
         for (const [color, cant] of Object.entries(producto.stock_colores)) {
-            const div = document.createElement('div');
-            div.className = 'color-item';
-            div.style.cssText = 'display: flex; gap: 10px; margin-top: 10px;';
+            const div = document.createElement('div'); div.className = 'color-item'; div.style.cssText = 'display: flex; gap: 10px; margin-top: 10px;';
             div.innerHTML = `<input type="text" value="${color}" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
                 <input type="number" value="${cant}" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
                 <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #e74c3c; font-size: 16px; cursor: pointer; padding: 0 10px;">✖</button>`;
             contenedorColores.appendChild(div);
         }
-    } else {
-        document.getElementById('btn-add-color').click(); // Agrega una fila vacía si no hay colores
-    }
+    } else { document.getElementById('btn-add-color').click(); }
 
-    // Cambiamos los botones
     document.getElementById('btn-agregar').textContent = "Guardar Cambios";
     document.getElementById('btn-cancelar-edicion').classList.remove('oculto');
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Subimos la pantalla
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
 }
 
-// 2. Botón "Cancelar Edición"
 document.getElementById('btn-cancelar-edicion').addEventListener('click', () => {
     document.getElementById('edit-producto-id').value = '';
     document.getElementById('titulo-panel-admin').textContent = "Publicar Nuevo Producto 3D";
-    document.getElementById('nuevo-nombre').value = '';
-    document.getElementById('nuevo-descripcion').value = '';
-    document.getElementById('nuevo-precio').value = '';
-    document.getElementById('nuevo-imagen').value = '';
+    document.getElementById('nuevo-nombre').value = ''; document.getElementById('nuevo-descripcion').value = ''; document.getElementById('nuevo-precio').value = ''; document.getElementById('nuevo-imagen').value = '';
     document.getElementById('contenedor-colores').innerHTML = `<div class="color-item" style="display: flex; gap: 10px;">
             <input type="text" placeholder="Color (Ej: PLA Blanco)" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
             <input type="number" placeholder="Stock" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
@@ -376,86 +465,53 @@ document.getElementById('btn-cancelar-edicion').addEventListener('click', () => 
 
 document.getElementById('btn-add-color').addEventListener('click', () => {
     const contenedor = document.getElementById('contenedor-colores');
-    const div = document.createElement('div');
-    div.className = 'color-item';
-    div.style.cssText = 'display: flex; gap: 10px; margin-top: 10px;';
+    const div = document.createElement('div'); div.className = 'color-item'; div.style.cssText = 'display: flex; gap: 10px; margin-top: 10px;';
     div.innerHTML = `<input type="text" placeholder="Color (Ej: PLA Negro)" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
         <input type="number" placeholder="Stock" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
         <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #e74c3c; font-size: 16px; cursor: pointer; padding: 0 10px;">✖</button>`;
     contenedor.appendChild(div);
 });
 
-// 3. Guardar o Actualizar el producto
 document.getElementById('btn-agregar').addEventListener('click', async () => {
     const btn = document.getElementById('btn-agregar');
-    const idEdit = document.getElementById('edit-producto-id').value; // Sabremos si estamos editando
+    const idEdit = document.getElementById('edit-producto-id').value; 
     
-    btn.textContent = idEdit ? "Guardando cambios..." : "Subiendo imagen y guardando..."; 
-    btn.disabled = true;
+    btn.textContent = idEdit ? "Guardando cambios..." : "Subiendo imagen y guardando..."; btn.disabled = true;
 
-    const nombre = document.getElementById('nuevo-nombre').value;
-    const descripcion = document.getElementById('nuevo-descripcion').value || 'Sin descripción';
-    const precio = parseFloat(document.getElementById('nuevo-precio').value);
-
+    const nombre = document.getElementById('nuevo-nombre').value; const descripcion = document.getElementById('nuevo-descripcion').value || 'Sin descripción'; const precio = parseFloat(document.getElementById('nuevo-precio').value);
     const itemsColor = document.querySelectorAll('.color-item');
     let stock_colores = {}; let stockTotal = 0;
     itemsColor.forEach(item => {
-        const color = item.querySelector('.input-color').value.trim();
-        const cant = parseInt(item.querySelector('.input-stock').value);
+        const color = item.querySelector('.input-color').value.trim(); const cant = parseInt(item.querySelector('.input-stock').value);
         if (color && !isNaN(cant)) { stock_colores[color] = cant; stockTotal += cant; }
     });
 
     if (!nombre || isNaN(precio) || stockTotal === 0) {
         alert("Completa el nombre, precio y al menos un color con stock válido.");
-        btn.textContent = idEdit ? "Guardar Cambios" : "Publicar Producto"; 
-        btn.disabled = false; return;
+        btn.textContent = idEdit ? "Guardar Cambios" : "Publicar Producto"; btn.disabled = false; return;
     }
 
     const inputImagen = document.getElementById('nuevo-imagen');
     let imagen_url = 'https://via.placeholder.com/300x250?text=Sin+Imagen'; 
-    
-    // Si estamos editando, conservamos la imagen vieja a menos que suba una nueva
-    if (idEdit) {
-        const productoOriginal = productosActuales.find(p => p.id == idEdit);
-        imagen_url = productoOriginal.imagen_url;
-    }
+    if (idEdit) { const productoOriginal = productosActuales.find(p => p.id == idEdit); imagen_url = productoOriginal.imagen_url; }
 
     if (inputImagen.files.length > 0) {
-        const archivo = inputImagen.files[0];
-        const extension = archivo.name.split('.').pop();
-        const nombreArchivo = `${Date.now()}.${extension}`; 
-
+        const archivo = inputImagen.files[0]; const extension = archivo.name.split('.').pop(); const nombreArchivo = `${Date.now()}.${extension}`; 
         const { data, error: errorUpload } = await supabase.storage.from('productos').upload(nombreArchivo, archivo);
-        if (errorUpload) {
-            alert("Error al subir la foto: " + errorUpload.message);
-            btn.textContent = idEdit ? "Guardar Cambios" : "Publicar Producto"; 
-            btn.disabled = false; return;
-        }
-        const { data: dataUrl } = supabase.storage.from('productos').getPublicUrl(nombreArchivo);
-        imagen_url = dataUrl.publicUrl;
+        if (errorUpload) { alert("Error al subir la foto: " + errorUpload.message); btn.textContent = idEdit ? "Guardar Cambios" : "Publicar Producto"; btn.disabled = false; return; }
+        const { data: dataUrl } = supabase.storage.from('productos').getPublicUrl(nombreArchivo); imagen_url = dataUrl.publicUrl;
     }
 
     let errorGuardado;
     if (idEdit) {
-        // ACTUALIZAR (UPDATE)
-        const { error } = await supabase.from('productos').update({ nombre, descripcion, precio, stock: stockTotal, stock_colores, imagen_url }).eq('id', idEdit);
-        errorGuardado = error;
+        const { error } = await supabase.from('productos').update({ nombre, descripcion, precio, stock: stockTotal, stock_colores, imagen_url }).eq('id', idEdit); errorGuardado = error;
     } else {
-        // CREAR NUEVO (INSERT)
-        const { error } = await supabase.from('productos').insert([{ nombre, descripcion, precio, stock: stockTotal, stock_colores, imagen_url }]);
-        errorGuardado = error;
+        const { error } = await supabase.from('productos').insert([{ nombre, descripcion, precio, stock: stockTotal, stock_colores, imagen_url }]); errorGuardado = error;
     }
 
-    if (errorGuardado) {
-        alert("Hubo un error al guardar: " + errorGuardado.message);
-    } else {
-        alert(idEdit ? "¡Producto actualizado con éxito!" : "¡Pieza 3D publicada con éxito!");
-        document.getElementById('btn-cancelar-edicion').click(); // Reutilizamos el botón de cancelar para limpiar todo
-        cargarProductos();
-    }
-    
-    btn.textContent = idEdit ? "Guardar Cambios" : "Publicar Producto"; 
-    btn.disabled = false;
+    if (errorGuardado) alert("Hubo un error al guardar: " + errorGuardado.message);
+    else { alert(idEdit ? "¡Producto actualizado con éxito!" : "¡Pieza 3D publicada con éxito!"); document.getElementById('btn-cancelar-edicion').click(); cargarProductos(); }
+    btn.textContent = idEdit ? "Guardar Cambios" : "Publicar Producto"; btn.disabled = false;
 });
 
 verificarSesion();
