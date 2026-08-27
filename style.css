@@ -1,59 +1,83 @@
-body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
-.container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.productos-grid { display: grid; gap: 15px; margin-top: 20px; }
-.producto-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-.stock-info { font-weight: bold; color: #2c3e50; }
-button { background: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
-button:hover { background: #2980b9; }
-button:disabled { background: #ccc; cursor: not-allowed; }
-input { width: 60px; padding: 8px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; }
-
-/* Nuevos estilos para el Login y Header */
-.oculto { display: none !important; }
-.header-app { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-.auth-buttons { display: flex; gap: 10px; margin-top: 15px; }
-.btn-verde { background: #27ae60; }
-.btn-verde:hover { background: #2ecc71; }
-.btn-rojo { background: #e74c3c; }
-.btn-rojo:hover { background: #c0392b; }
-.mensaje-error { color: #e74c3c; font-weight: bold; margin-top: 10px; }
-
-/* Para que los inputs del login se vean mejor */
-#auth-container input { display: block; width: 90%; margin-top: 10px; margin-bottom: 10px; padding: 10px; }
-
-/* Estilos para los nuevos productos con imagen */
-.producto-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; display: flex; gap: 15px; align-items: center; }
-.producto-img { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
-.producto-info { flex-grow: 1; }
-.producto-precio { font-size: 1.3em; font-weight: bold; color: #27ae60; margin: 5px 0; }
-.producto-acciones { text-align: right; min-width: 150px; }
-
-/* Layout del E-commerce (Productos + Carrito) */
-.layout-principal { display: flex; gap: 20px; align-items: flex-start; margin-top: 20px; }
-.productos-grid { flex: 2; display: grid; gap: 15px; }
-
-/* Caja del carrito flotante */
-.carrito-box { flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; position: sticky; top: 20px; min-width: 280px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-.carrito-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
-.carrito-item-info h4 { margin: 0; font-size: 1em; color: #333; }
-.carrito-item-info p { margin: 5px 0 0 0; color: #666; font-size: 0.9em; }
-.btn-quitar { background: #e74c3c; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; }
-.carrito-footer { margin-top: 15px; border-top: 2px solid #eee; padding-top: 15px; }
-
-/* Para que se vea bien en celulares (Responsive Design) */
-@media (max-width: 768px) {
-    .layout-principal { flex-direction: column; }
-    .carrito-box { width: 100%; box-sizing: border-box; position: static; }
-    .producto-card { flex-direction: column; text-align: center; }
-    .producto-img { width: 100%; height: 200px; }
+/* ==========================================
+   ESTILO INSPIRADO EN MERCADO LIBRE
+   ========================================== */
+body { 
+    font-family: 'Proxima Nova', -apple-system, 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; 
+    background: #ebebeb; /* Gris clásico de ML */
+    margin: 0;
+    padding: 0;
+    color: #333;
 }
 
-/* Nueva Columna Derecha */
+/* Cabecera Amarilla */
+.header-app { 
+    background-color: #ffe600; 
+    padding: 15px 40px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+.header-app h1 { margin: 0; color: #333; font-size: 1.5em; }
+
+.container { max-width: 1200px; margin: auto; padding: 0 20px; }
+.oculto { display: none !important; }
+
+/* Botones estilo ML */
+button { border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+.btn-verde, #btn-confirmar-reserva { background: #3483fa; color: white; } /* Azul ML */
+.btn-verde:hover, #btn-confirmar-reserva:hover { background: #2968c8; }
+.btn-rojo { background: transparent; color: #3483fa; border: 1px solid #3483fa; } /* Botón secundario */
+.btn-rojo:hover { background: rgba(52, 131, 250, 0.1); }
+button:disabled { background: #ccc !important; cursor: not-allowed; }
+
+/* Layout y Tarjetas */
+.layout-principal { display: flex; gap: 20px; align-items: flex-start; }
+.productos-grid { flex: 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+
+.producto-card { 
+    background: white; 
+    border-radius: 8px; 
+    display: flex; 
+    flex-direction: column;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,.12);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.producto-card:hover { box-shadow: 0 4px 8px 0 rgba(0,0,0,.1); }
+
+.producto-img { width: 100%; height: 250px; object-fit: cover; border-bottom: 1px solid #eee; }
+.producto-info { padding: 20px; flex-grow: 1; }
+.producto-info h3 { margin: 0 0 10px 0; font-size: 20px; font-weight: 400; color: #333; }
+.producto-info p { margin: 0; color: #666; font-size: 14px; }
+.producto-precio { font-size: 24px !important; font-weight: 400 !important; color: #333 !important; margin: 10px 0 !important; }
+.stock-info { color: #00a650 !important; font-size: 12px !important; font-weight: 600; } /* Verde de "Llega mañana" */
+
+.producto-acciones { padding: 0 20px 20px 20px; }
+.producto-acciones input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+.producto-acciones button { width: 100%; margin-bottom: 5px; }
+
+/* Paneles laterales */
 .columna-derecha { flex: 1; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 20px; }
+.carrito-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.12); }
+.carrito-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+.carrito-item-info h4 { margin: 0; font-size: 14px; }
+.carrito-item-info p { margin: 5px 0 0 0; color: #666; font-size: 12px; }
+.btn-quitar { background: transparent; color: #e74c3c; border: none; padding: 5px; cursor: pointer; font-size: 12px; }
 
-/* Quitamos el sticky del carrito individual porque ahora lo maneja la columna */
-.carrito-box { position: static; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+/* Scrollbars y selects */
+select, input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
+#lista-pedidos::-webkit-scrollbar, #lista-mis-pedidos::-webkit-scrollbar { width: 6px; }
+#lista-pedidos::-webkit-scrollbar-thumb, #lista-mis-pedidos::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
-/* Para embellecer la barra de scroll de los pedidos */
-#lista-pedidos::-webkit-scrollbar { width: 6px; }
-#lista-pedidos::-webkit-scrollbar-thumb { background: #bce8f1; border-radius: 4px; }
+/* Responsive */
+@media (max-width: 768px) {
+    .layout-principal { flex-direction: column; }
+    .columna-derecha { width: 100%; box-sizing: border-box; position: static; }
+}
+
+/* Pantalla de Auth */
+#auth-container { max-width: 400px; background: white; padding: 40px; margin-top: 50px; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.12); text-align: center; }
+#auth-container input { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+.auth-buttons { display: flex; flex-direction: column; gap: 10px; }

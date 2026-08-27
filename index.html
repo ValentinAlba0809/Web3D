@@ -29,16 +29,44 @@
             <button id="btn-logout" class="btn-rojo">Cerrar sesión</button>
         </div>
 
-        <!-- PANEL ADMIN: AGREGAR PRODUCTOS -->
-        <div id="admin-panel" class="oculto" style="background: #fff3cd; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ffeeba;">
-            <h3 style="margin-top: 0; color: #856404;">🛠️ Panel de Administración - Agregar Productos</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                <input type="text" id="nuevo-nombre" placeholder="Nombre del producto">
-                <input type="text" id="nuevo-descripcion" placeholder="Breve descripción">
-                <input type="number" id="nuevo-precio" placeholder="Precio ($)" min="0" style="width: 100px;">
-                <input type="number" id="nuevo-stock" placeholder="Stock" min="1" style="width: 80px;">
-                <input type="text" id="nuevo-imagen" placeholder="URL de la imagen (Opcional)">
-                <button id="btn-agregar" class="btn-verde">Agregar Producto</button>
+        <!-- PANEL ADMIN: AGREGAR / EDITAR PRODUCTOS (Estilo ML con Colores) -->
+        <div id="admin-panel" class="oculto" style="background: white; padding: 25px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.12);">
+            <h3 id="titulo-panel-admin" style="margin-top: 0; font-size: 20px; font-weight: 400; color: #333; border-bottom: 1px solid #eee; padding-bottom: 15px;">Publicar Nuevo Producto 3D</h3>
+            
+            <!-- Campo oculto para saber qué producto estamos editando -->
+            <input type="hidden" id="edit-producto-id" value="">
+
+            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                <!-- Datos básicos -->
+                <div style="flex: 1; min-width: 280px;">
+                    <label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Datos de la pieza</label>
+                    <input type="text" id="nuevo-nombre" placeholder="Ej: Soporte para Joystick PS5" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px;">
+                    <input type="text" id="nuevo-descripcion" placeholder="Descripción (Ej: Impreso en PLA, alta resistencia)" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px;">
+                    <input type="number" id="nuevo-precio" placeholder="Precio final ($)" min="0" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px;">
+                    
+                    <label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Sube una foto (.jpg, .png)</label>
+                    <input type="file" id="nuevo-imagen" accept="image/*" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #fff;">
+                </div>
+                
+                <!-- Sección de Colores y Stock -->
+                <div style="flex: 1; min-width: 280px; background: #f5f5f5; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
+                    <label style="font-size: 14px; color: #666; margin-bottom: 10px; display: block;">Variantes de Color y Stock</label>
+                    
+                    <div id="contenedor-colores" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                        <div class="color-item" style="display: flex; gap: 10px;">
+                            <input type="text" placeholder="Color (Ej: PLA Blanco)" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
+                            <input type="number" placeholder="Stock" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
+                        </div>
+                    </div>
+                    
+                    <button id="btn-add-color" style="background: transparent; color: #3483fa; width: 100%; padding: 10px; border: 1px dashed #3483fa; border-radius: 6px; margin-bottom: 10px;">+ Añadir otro color</button>
+                    <p style="font-size: 12px; color: #999; margin: 0; text-align: center;">El stock total se calculará automáticamente.</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button id="btn-agregar" class="btn-verde" style="flex: 2; padding: 15px; font-size: 16px;">Publicar Producto</button>
+                <button id="btn-cancelar-edicion" class="btn-rojo oculto" style="flex: 1; padding: 15px; font-size: 16px;">Cancelar Edición</button>
             </div>
         </div>
 
