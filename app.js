@@ -10,7 +10,7 @@ const authMensaje = document.getElementById('auth-mensaje');
 const contenedorProductos = document.getElementById('lista-productos');
 
 let esAdmin = false;
-let modoInvitado = false; // <-- Nueva variable para saber si entró a mirar
+let modoInvitado = true; // Por defecto todos son invitados
 let productosActuales = []; 
 let carrito = []; 
 let todosLosPedidos = [];
@@ -31,26 +31,24 @@ document.getElementById('btn-toggle-auth').addEventListener('click', () => {
         document.getElementById('btn-toggle-auth').textContent = "¿Ya tienes cuenta? Inicia sesión";
     } else {
         document.getElementById('auth-titulo').textContent = "Iniciar Sesión";
-        document.getElementById('auth-subtitulo').textContent = "Ingresa para ver tus pedidos y reservar";
+        document.getElementById('auth-subtitulo').textContent = "Ingresa para confirmar tu reserva y ver tus pedidos";
         document.getElementById('btn-login').classList.remove('oculto');
         document.getElementById('btn-register').classList.add('oculto');
         document.getElementById('btn-toggle-auth').textContent = "¿No tienes cuenta? Regístrate";
     }
 });
 
-// Entrar como invitado
-document.getElementById('btn-invitado').addEventListener('click', () => {
-    modoInvitado = true;
+// Botón de la barra de navegación para ir al Login
+document.getElementById('btn-nav-login').addEventListener('click', () => {
+    appContainer.classList.add('oculto');
+    authContainer.classList.remove('oculto');
+    authMensaje.textContent = "";
+});
+
+// Botón para cancelar el login y volver a mirar la tienda
+document.getElementById('btn-volver-tienda').addEventListener('click', () => {
     authContainer.classList.add('oculto');
     appContainer.classList.remove('oculto');
-    
-    // Ocultamos paneles de usuario/admin
-    document.getElementById('admin-panel').classList.add('oculto');
-    document.getElementById('panel-derecho-usuario').classList.add('oculto');
-    document.getElementById('btn-perfil').classList.add('oculto');
-    document.getElementById('btn-logout').textContent = "Volver al Login";
-    
-    cargarProductos();
 });
 
 // ==========================================
@@ -61,16 +59,23 @@ async function verificarSesion() {
     const adminPanel = document.getElementById('admin-panel');
     const adminPedidos = document.getElementById('admin-pedidos');
     const clientePedidos = document.getElementById('cliente-pedidos');
+    
+    const btnNavLogin = document.getElementById('btn-nav-login');
+    const btnPerfil = document.getElementById('btn-perfil');
+    const btnLogout = document.getElementById('btn-logout');
+
+    // La tienda siempre es visible por defecto al cargar
+    authContainer.classList.add('oculto');
+    appContainer.classList.remove('oculto');
 
     if (session) {
+        // USUARIO LOGUEADO
         modoInvitado = false;
-        authContainer.classList.add('oculto');
-        appContainer.classList.remove('oculto');
+        btnNavLogin.classList.add('oculto');
+        btnPerfil.classList.remove('oculto');
+        btnLogout.classList.remove('oculto');
         document.getElementById('panel-derecho-usuario').classList.remove('oculto');
-        document.getElementById('btn-perfil').classList.remove('oculto');
-        document.getElementById('btn-logout').textContent = "Cerrar sesión";
         
-        // Cargar datos en el modal de perfil
         const meta = session.user.user_metadata || {};
         document.getElementById('perfil-nombre').value = meta.nombre || '';
         document.getElementById('perfil-apellido').value = meta.apellido || '';
@@ -89,11 +94,21 @@ async function verificarSesion() {
             esAdmin = false;
             cargarMisPedidos(session.user.email);
         }
-        cargarProductos();
     } else {
-        authContainer.classList.remove('oculto');
-        appContainer.classList.add('oculto');
+        // INVITADO
+        modoInvitado = true;
+        esAdmin = false;
+        
+        btnNavLogin.classList.remove('oculto');
+        btnPerfil.classList.add('oculto');
+        btnLogout.classList.add('oculto');
+        
+        adminPanel.classList.add('oculto');
+        adminPedidos.classList.add('oculto');
+        clientePedidos.classList.add('oculto');
     }
+    
+    cargarProductos();
 }
 
 document.getElementById('btn-register').addEventListener('click', async () => {
@@ -110,16 +125,15 @@ document.getElementById('btn-register').addEventListener('click', async () => {
     
     const { data, error } = await supabase.auth.signUp({ 
         email, password,
-        options: { data: { nombre: nombre, apellido: apellido } } // Guardamos Nombre y Apellido
+        options: { data: { nombre: nombre, apellido: apellido } } 
     });
 
     if (error) {
         authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Error: " + error.message;
     } else {
-        // Si Supabase pide confirmar correo, la sesión viene vacía
         if (!data.session) {
             authMensaje.style.color = "green"; 
-            authMensaje.textContent = "¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar tu cuenta antes de entrar.";
+            authMensaje.textContent = "¡Registro exitoso! Revisa tu correo para verificar tu cuenta antes de entrar.";
         } else {
             authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Iniciando sesión...";
             verificarSesion(); 
@@ -140,42 +154,28 @@ document.getElementById('btn-login').addEventListener('click', async () => {
 });
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
-    if (!modoInvitado) await supabase.auth.signOut();
+    await supabase.auth.signOut();
     document.getElementById('email').value = '';
     document.getElementById('password').value = '';
-    modoInvitado = false;
-    carrito = []; renderizarCarrito(); verificarSesion(); 
+    carrito = []; // El carrito sí se borra al cerrar sesión
+    renderizarCarrito(); 
+    verificarSesion(); 
 });
 
-// ==========================================
-// LÓGICA DEL PERFIL
-// ==========================================
-document.getElementById('btn-perfil').addEventListener('click', () => {
-    document.getElementById('perfil-modal').classList.toggle('oculto');
-});
-document.getElementById('btn-cerrar-perfil').addEventListener('click', () => {
-    document.getElementById('perfil-modal').classList.add('oculto');
-});
-
+// Lógica de perfil
+document.getElementById('btn-perfil').addEventListener('click', () => { document.getElementById('perfil-modal').classList.toggle('oculto'); });
+document.getElementById('btn-cerrar-perfil').addEventListener('click', () => { document.getElementById('perfil-modal').classList.add('oculto'); });
 document.getElementById('btn-guardar-perfil').addEventListener('click', async () => {
-    const nuevoNombre = document.getElementById('perfil-nombre').value;
-    const nuevoApellido = document.getElementById('perfil-apellido').value;
-    
-    const btn = document.getElementById('btn-guardar-perfil');
-    btn.textContent = "Guardando..."; btn.disabled = true;
-
+    const btn = document.getElementById('btn-guardar-perfil'); btn.textContent = "Guardando..."; btn.disabled = true;
     const { data, error } = await supabase.auth.updateUser({
-        data: { nombre: nuevoNombre, apellido: nuevoApellido }
+        data: { nombre: document.getElementById('perfil-nombre').value, apellido: document.getElementById('perfil-apellido').value }
     });
-
-    if (error) alert("Error al guardar: " + error.message);
-    else alert("¡Perfil actualizado con éxito!");
-    
+    if (error) alert("Error al guardar: " + error.message); else alert("¡Perfil actualizado con éxito!");
     btn.textContent = "Guardar Cambios"; btn.disabled = false;
 });
 
 // ==========================================
-// PRODUCTOS EN PANTALLA (CON MODO INVITADO)
+// PRODUCTOS EN PANTALLA
 // ==========================================
 async function cargarProductos() {
     const { data: productos, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
@@ -187,8 +187,7 @@ async function cargarProductos() {
 function renderizarProductos(productos) {
     contenedorProductos.innerHTML = ''; 
     productos.forEach(producto => {
-        const div = document.createElement('div');
-        div.className = 'producto-card';
+        const div = document.createElement('div'); div.className = 'producto-card';
         
         const botonesAdmin = esAdmin ? `
             <div style="display: flex; gap: 5px; margin-top: 10px;">
@@ -215,13 +214,7 @@ function renderizarProductos(productos) {
             selectColoresHTML = `<select id="color-${producto.id}" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px;">${opciones}</select>`;
         }
 
-        // Si es invitado, el botón cambia de función
-        let accionBoton = modoInvitado 
-            ? `onclick="alert('Debes iniciar sesión o registrarte para poder reservar productos.'); document.getElementById('btn-logout').click();"` 
-            : `onclick="window.agregarAlCarrito(${producto.id})"`;
-            
-        if (modoInvitado && producto.stock > 0) textoBoton = 'Inicia sesión para comprar';
-
+        // Todos pueden agregar al carrito, logueados o no
         div.innerHTML = `
             <img src="${producto.imagen_url || 'https://via.placeholder.com/300x250'}" alt="${producto.nombre}" class="producto-img" onerror="this.src='https://via.placeholder.com/300x250?text=Sin+Imagen'">
             <div class="producto-info">
@@ -232,8 +225,8 @@ function renderizarProductos(productos) {
             </div>
             <div class="producto-acciones">
                 ${selectColoresHTML}
-                <input type="number" id="cant-${producto.id}" value="1" min="1" max="${producto.stock}" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;" ${modoInvitado ? 'disabled' : ''}>
-                <button ${accionBoton} ${botonDeshabilitado} class="btn-verde" style="width: 100%;">
+                <input type="number" id="cant-${producto.id}" value="1" min="1" max="${producto.stock}" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                <button onclick="window.agregarAlCarrito(${producto.id})" ${botonDeshabilitado} class="btn-verde" style="width: 100%;">
                     ${textoBoton}
                 </button>
                 ${botonesAdmin}
@@ -244,10 +237,8 @@ function renderizarProductos(productos) {
 }
 
 // ==========================================
-// CARRITO, PEDIDOS Y PANEL DE ADMIN 
-// (EL RESTO DEL CÓDIGO SE MANTIENE IGUAL)
+// CARRITO Y RESERVAS
 // ==========================================
-
 window.agregarAlCarrito = function(id) {
     const producto = productosActuales.find(p => p.id === id);
     const inputCantidad = document.getElementById(`cant-${id}`);
@@ -298,15 +289,27 @@ function renderizarCarrito() {
     spanTotal.textContent = total.toFixed(2); btnConfirmar.disabled = false;
 }
 
+// Botón de confirmar reserva: El filtro más importante
 document.getElementById('btn-confirmar-reserva').addEventListener('click', async () => {
     if (carrito.length === 0) return;
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Si no está logueado, lo mandamos a la pantalla de login sin borrar su carrito
+    if (!session) {
+        alert("¡Tu carrito está listo! Por favor, inicia sesión o regístrate para confirmar tu reserva.");
+        appContainer.classList.add('oculto');
+        authContainer.classList.remove('oculto');
+        document.getElementById('auth-mensaje').style.color = "#3483fa";
+        document.getElementById('auth-mensaje').textContent = "Inicia sesión para completar tu compra.";
+        return;
+    }
+
+    // Si está logueado, procesamos la compra normal
     const btnConfirmar = document.getElementById('btn-confirmar-reserva');
     btnConfirmar.textContent = "Procesando..."; btnConfirmar.disabled = true;
 
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    // Agregamos el nombre real al pedido para que tú lo veas mejor
     const nombreCliente = session.user.user_metadata?.nombre || session.user.email;
 
     const { error: errorPedido } = await supabase.from('pedidos').insert([{
@@ -320,7 +323,6 @@ document.getElementById('btn-confirmar-reserva').addEventListener('click', async
         const productoOriginal = productosActuales.find(p => p.id === item.id);
         let nuevoStock = productoOriginal.stock - item.cantidad;
         let nuevosColores = { ...productoOriginal.stock_colores };
-        
         if (item.color && nuevosColores[item.color] !== undefined) nuevosColores[item.color] -= item.cantidad;
         await supabase.from('productos').update({ stock: nuevoStock, stock_colores: nuevosColores }).eq('id', item.id);
     }
@@ -331,6 +333,9 @@ document.getElementById('btn-confirmar-reserva').addEventListener('click', async
     btnConfirmar.textContent = "Confirmar Reserva";
 });
 
+// ==========================================
+// GESTIÓN DE PEDIDOS Y ADMIN (SIN CAMBIOS)
+// ==========================================
 window.cancelarPedido = async function(idPedido) {
     if(!confirm("¿Seguro que quieres cancelar este pedido? El stock será devuelto.")) return;
     const { data: pedido, error: errorPedido } = await supabase.from('pedidos').select('*').eq('id', idPedido).single();
@@ -377,8 +382,7 @@ function renderizarPedidos() {
         } else {
             botones = `<span style="color: red; font-weight: bold; font-size: 0.9em; text-align: center; width: 100%;">✖ Cancelado</span>`;
         }
-        const div = document.createElement('div');
-        div.style.cssText = "background: white; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.9em;";
+        const div = document.createElement('div'); div.style.cssText = "background: white; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.9em;";
         div.innerHTML = `<div style="margin-bottom: 8px;"><strong>Orden #${pedido.id}</strong><br><span style="color: #666;">👤 ${pedido.usuario_email}</span><br>
             <span style="color: #555; display: block; margin: 5px 0;">🛒 ${resumenProductos}</span><span style="color: #27ae60; font-weight: bold; font-size: 1.1em;">Total: $${pedido.total}</span></div>
             <div style="display: flex; gap: 5px; justify-content: space-between; border-top: 1px solid #eee; padding-top: 8px;">${botones}</div>`;
@@ -408,15 +412,13 @@ async function cargarMisPedidos(email) {
         } else if (pedido.estado === 'Completado') { estadoHtml = `<span style="color: green; font-weight: bold;">✔ Completado</span>`; } 
         else { estadoHtml = `<span style="color: red; font-weight: bold;">✖ Cancelado</span>`; }
         
-        const div = document.createElement('div');
-        div.style.cssText = "background: #f8f9f9; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.9em;";
+        const div = document.createElement('div'); div.style.cssText = "background: #f8f9f9; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.9em;";
         div.innerHTML = `<div style="margin-bottom: 5px;"><strong>Orden #${pedido.id}</strong><br><span style="color: #555; display: block; margin: 3px 0;">🛒 ${resumenProductos}</span><span style="color: #27ae60; font-weight: bold;">Total: $${pedido.total}</span></div>
             <div style="border-top: 1px solid #eee; padding-top: 5px; text-align: center;">${estadoHtml}${botonCancelar}</div>`;
         contenedor.appendChild(div);
     });
 }
 
-// ADMIN: EDITAR Y PUBLICAR PRODUCTO
 window.eliminarProducto = async function(id) {
     if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
         const { error } = await supabase.from('productos').delete().eq('id', id);
@@ -433,8 +435,7 @@ window.editarProducto = function(id) {
     document.getElementById('nuevo-descripcion').value = producto.descripcion;
     document.getElementById('nuevo-precio').value = producto.precio;
 
-    const contenedorColores = document.getElementById('contenedor-colores');
-    contenedorColores.innerHTML = '';
+    const contenedorColores = document.getElementById('contenedor-colores'); contenedorColores.innerHTML = '';
     
     if (producto.stock_colores && Object.keys(producto.stock_colores).length > 0) {
         for (const [color, cant] of Object.entries(producto.stock_colores)) {
@@ -452,15 +453,13 @@ window.editarProducto = function(id) {
 }
 
 document.getElementById('btn-cancelar-edicion').addEventListener('click', () => {
-    document.getElementById('edit-producto-id').value = '';
-    document.getElementById('titulo-panel-admin').textContent = "Publicar Nuevo Producto 3D";
+    document.getElementById('edit-producto-id').value = ''; document.getElementById('titulo-panel-admin').textContent = "Publicar Nuevo Producto 3D";
     document.getElementById('nuevo-nombre').value = ''; document.getElementById('nuevo-descripcion').value = ''; document.getElementById('nuevo-precio').value = ''; document.getElementById('nuevo-imagen').value = '';
     document.getElementById('contenedor-colores').innerHTML = `<div class="color-item" style="display: flex; gap: 10px;">
             <input type="text" placeholder="Color (Ej: PLA Blanco)" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
             <input type="number" placeholder="Stock" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
         </div>`;
-    document.getElementById('btn-agregar').textContent = "Publicar Producto";
-    document.getElementById('btn-cancelar-edicion').classList.add('oculto');
+    document.getElementById('btn-agregar').textContent = "Publicar Producto"; document.getElementById('btn-cancelar-edicion').classList.add('oculto');
 });
 
 document.getElementById('btn-add-color').addEventListener('click', () => {
@@ -473,26 +472,19 @@ document.getElementById('btn-add-color').addEventListener('click', () => {
 });
 
 document.getElementById('btn-agregar').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-agregar');
-    const idEdit = document.getElementById('edit-producto-id').value; 
-    
+    const btn = document.getElementById('btn-agregar'); const idEdit = document.getElementById('edit-producto-id').value; 
     btn.textContent = idEdit ? "Guardando cambios..." : "Subiendo imagen y guardando..."; btn.disabled = true;
 
     const nombre = document.getElementById('nuevo-nombre').value; const descripcion = document.getElementById('nuevo-descripcion').value || 'Sin descripción'; const precio = parseFloat(document.getElementById('nuevo-precio').value);
-    const itemsColor = document.querySelectorAll('.color-item');
-    let stock_colores = {}; let stockTotal = 0;
+    const itemsColor = document.querySelectorAll('.color-item'); let stock_colores = {}; let stockTotal = 0;
     itemsColor.forEach(item => {
         const color = item.querySelector('.input-color').value.trim(); const cant = parseInt(item.querySelector('.input-stock').value);
         if (color && !isNaN(cant)) { stock_colores[color] = cant; stockTotal += cant; }
     });
 
-    if (!nombre || isNaN(precio) || stockTotal === 0) {
-        alert("Completa el nombre, precio y al menos un color con stock válido.");
-        btn.textContent = idEdit ? "Guardar Cambios" : "Publicar Producto"; btn.disabled = false; return;
-    }
+    if (!nombre || isNaN(precio) || stockTotal === 0) { alert("Completa el nombre, precio y al menos un color con stock válido."); btn.textContent = idEdit ? "Guardar Cambios" : "Publicar Producto"; btn.disabled = false; return; }
 
-    const inputImagen = document.getElementById('nuevo-imagen');
-    let imagen_url = 'https://via.placeholder.com/300x250?text=Sin+Imagen'; 
+    const inputImagen = document.getElementById('nuevo-imagen'); let imagen_url = 'https://via.placeholder.com/300x250?text=Sin+Imagen'; 
     if (idEdit) { const productoOriginal = productosActuales.find(p => p.id == idEdit); imagen_url = productoOriginal.imagen_url; }
 
     if (inputImagen.files.length > 0) {
@@ -503,11 +495,8 @@ document.getElementById('btn-agregar').addEventListener('click', async () => {
     }
 
     let errorGuardado;
-    if (idEdit) {
-        const { error } = await supabase.from('productos').update({ nombre, descripcion, precio, stock: stockTotal, stock_colores, imagen_url }).eq('id', idEdit); errorGuardado = error;
-    } else {
-        const { error } = await supabase.from('productos').insert([{ nombre, descripcion, precio, stock: stockTotal, stock_colores, imagen_url }]); errorGuardado = error;
-    }
+    if (idEdit) { const { error } = await supabase.from('productos').update({ nombre, descripcion, precio, stock: stockTotal, stock_colores, imagen_url }).eq('id', idEdit); errorGuardado = error; } 
+    else { const { error } = await supabase.from('productos').insert([{ nombre, descripcion, precio, stock: stockTotal, stock_colores, imagen_url }]); errorGuardado = error; }
 
     if (errorGuardado) alert("Hubo un error al guardar: " + errorGuardado.message);
     else { alert(idEdit ? "¡Producto actualizado con éxito!" : "¡Pieza 3D publicada con éxito!"); document.getElementById('btn-cancelar-edicion').click(); cargarProductos(); }

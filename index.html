@@ -8,10 +8,10 @@
 </head>
 <body>
     
-    <!-- 1. PANTALLA DE LOGIN Y REGISTRO -->
-    <div id="auth-container" class="container">
+    <!-- 1. PANTALLA DE LOGIN Y REGISTRO (Oculta por defecto ahora) -->
+    <div id="auth-container" class="container oculto">
         <h2 id="auth-titulo">Iniciar Sesión</h2>
-        <p id="auth-subtitulo">Ingresa para ver tus pedidos y reservar</p>
+        <p id="auth-subtitulo">Ingresa para confirmar tu reserva y ver tus pedidos</p>
         
         <!-- Campos exclusivos de registro -->
         <div id="campos-registro" class="oculto">
@@ -27,23 +27,27 @@
             <button id="btn-register" class="btn-verde oculto">Crear Cuenta</button>
             <button id="btn-toggle-auth" style="background: transparent; color: #3483fa;">¿No tienes cuenta? Regístrate</button>
             <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-            <button id="btn-invitado" style="background: #f5f5f5; color: #333; border: 1px solid #ccc;">Ver productos sin registrarme</button>
+            <button id="btn-volver-tienda" style="background: #f5f5f5; color: #333; border: 1px solid #ccc;">Volver a la Tienda</button>
         </div>
         <p id="auth-mensaje" class="mensaje-error" style="margin-top: 15px;"></p>
     </div>
 
-    <!-- 2. PANTALLA PRINCIPAL -->
-    <div id="app-container" class="container oculto">
+    <!-- 2. PANTALLA PRINCIPAL (La Tienda) -->
+    <div id="app-container" class="container">
         
         <div class="header-app">
             <h1>Tienda 3D</h1>
             <div style="display: flex; gap: 10px;">
-                <button id="btn-perfil" style="background: white; color: #333;">👤 Mi Perfil</button>
-                <button id="btn-logout" class="btn-rojo">Cerrar sesión</button>
+                <!-- Botón para los que no iniciaron sesión -->
+                <button id="btn-nav-login" style="background: white; color: #3483fa; border: 1px solid #3483fa;">Iniciar Sesión / Registrarme</button>
+                
+                <!-- Botones para los que ya están logueados -->
+                <button id="btn-perfil" class="oculto" style="background: white; color: #333;">👤 Mi Perfil</button>
+                <button id="btn-logout" class="btn-rojo oculto">Cerrar sesión</button>
             </div>
         </div>
 
-        <!-- MODAL DE PERFIL (Oculto por defecto) -->
+        <!-- MODAL DE PERFIL -->
         <div id="perfil-modal" class="oculto" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #ddd;">
             <h3 style="margin-top: 0;">👤 Mis Datos</h3>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
