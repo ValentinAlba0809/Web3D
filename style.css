@@ -3,7 +3,7 @@
    ========================================== */
 body { 
     font-family: 'Proxima Nova', -apple-system, 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; 
-    background: #ebebeb; /* Gris clásico de ML */
+    background: #ebebeb; 
     margin: 0;
     padding: 0;
     color: #333;
@@ -24,11 +24,11 @@ body {
 .container { max-width: 1200px; margin: auto; padding: 0 20px; }
 .oculto { display: none !important; }
 
-/* Botones estilo ML */
+/* Botones */
 button { border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: background 0.2s; }
-.btn-verde, #btn-confirmar-reserva { background: #3483fa; color: white; } /* Azul ML */
+.btn-verde, #btn-confirmar-reserva { background: #3483fa; color: white; } 
 .btn-verde:hover, #btn-confirmar-reserva:hover { background: #2968c8; }
-.btn-rojo { background: transparent; color: #3483fa; border: 1px solid #3483fa; } /* Botón secundario */
+.btn-rojo { background: transparent; color: #3483fa; border: 1px solid #3483fa; } 
 .btn-rojo:hover { background: rgba(52, 131, 250, 0.1); }
 button:disabled { background: #ccc !important; cursor: not-allowed; }
 
@@ -52,7 +52,7 @@ button:disabled { background: #ccc !important; cursor: not-allowed; }
 .producto-info h3 { margin: 0 0 10px 0; font-size: 20px; font-weight: 400; color: #333; }
 .producto-info p { margin: 0; color: #666; font-size: 14px; }
 .producto-precio { font-size: 24px !important; font-weight: 400 !important; color: #333 !important; margin: 10px 0 !important; }
-.stock-info { color: #00a650 !important; font-size: 12px !important; font-weight: 600; } /* Verde de "Llega mañana" */
+.stock-info { color: #00a650 !important; font-size: 12px !important; font-weight: 600; } 
 
 .producto-acciones { padding: 0 20px 20px 20px; }
 .producto-acciones input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
@@ -71,67 +71,73 @@ select, input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-
 #lista-pedidos::-webkit-scrollbar, #lista-mis-pedidos::-webkit-scrollbar { width: 6px; }
 #lista-pedidos::-webkit-scrollbar-thumb, #lista-mis-pedidos::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .layout-principal { flex-direction: column; }
-    .columna-derecha { width: 100%; box-sizing: border-box; position: static; }
-}
-
 /* Pantalla de Auth */
 #auth-container { max-width: 400px; background: white; padding: 40px; margin-top: 50px; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.12); text-align: center; }
 #auth-container input { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
 .auth-buttons { display: flex; flex-direction: column; gap: 10px; }
 
 /* ==========================================
-   MEJORAS DE NAVEGACIÓN Y RESPONSIVE (MÓVIL)
+   MEJORAS DE PERFIL, MÓVIL Y BOTÓN FLOTANTE
    ========================================== */
-
-/* Comportamiento suave al hacer scroll (para el botón flotante) */
 html { scroll-behavior: smooth; }
 
-/* Estilo para las variantes de color */
+/* Botón rojo sólido */
+.btn-rojo-solido { background: #e74c3c; color: white; border: none; font-weight: 600; padding: 12px 20px; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+.btn-rojo-solido:hover { background: #c0392b; }
+
+.perfil-inputs { display: flex; gap: 10px; margin-bottom: 15px; }
 .color-item { display: flex; gap: 10px; margin-bottom: 10px; width: 100%; align-items: center; }
 
-/* Botón flotante para ver carrito en celular */
+/* DISEÑO DEL NUEVO BOTÓN FLOTANTE CIRCULAR */
 #btn-flotante-carrito {
-    display: none;
     position: fixed;
     bottom: 20px;
     right: 20px;
     background: #3483fa;
     color: white;
-    padding: 15px 20px;
-    border-radius: 50px;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
     text-decoration: none;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     z-index: 1000;
+    transition: transform 0.2s;
 }
-#btn-flotante-carrito:hover { background: #2968c8; }
+#btn-flotante-carrito:active { transform: scale(0.9); }
 
-/* REGLAS PARA CELULARES */
+/* Globito rojo de notificación (Badge) */
+#cantidad-flotante {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #e74c3c;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* REGLAS PARA CELULARES Y TABLETS */
 @media (max-width: 768px) {
-    /* Mostramos el botón flotante solo en celular si tiene la clase "mostrar" */
-    #btn-flotante-carrito.mostrar { display: block; }
-    
-    /* Apilamos color y stock en vertical */
+    .layout-principal { flex-direction: column; }
+    .columna-derecha { width: 100%; box-sizing: border-box; position: static; }
+    .perfil-inputs { flex-direction: column; }
+    .perfil-inputs input { width: 100%; box-sizing: border-box; }
     .color-item { flex-direction: column; align-items: stretch; }
     .color-item button { width: 100%; padding: 10px; border: 1px solid #e74c3c !important; margin-top: 5px; }
 }
 
-/* ==========================================
-   MEJORAS DEL PERFIL Y BOTÓN ROJO SÓLIDO
-   ========================================== */
-
-/* Botón rojo sólido (Mismo estilo que Guardar Cambios) */
-.btn-rojo-solido { background: #e74c3c; color: white; border: none; font-weight: 600; padding: 12px 20px; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
-.btn-rojo-solido:hover { background: #c0392b; }
-
-/* Contenedor de inputs del perfil */
-.perfil-inputs { display: flex; gap: 10px; margin-bottom: 15px; }
-
-/* En celulares, apilamos nombre y apellido */
-@media (max-width: 768px) {
-    .perfil-inputs { flex-direction: column; }
-    .perfil-inputs input { width: 100%; box-sizing: border-box; }
+/* Ocultar botón flotante en pantallas grandes de PC */
+@media (min-width: 769px) {
+    #btn-flotante-carrito { display: none !important; }
 }

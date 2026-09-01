@@ -45,19 +45,15 @@
         <!-- MODAL DE PERFIL -->
         <div id="perfil-modal" class="oculto" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #ddd;">
             <h3 style="margin-top: 0;">👤 Mis Datos</h3>
-            
-            <!-- Contenedor responsivo para el celular -->
             <div class="perfil-inputs">
                 <input type="text" id="perfil-nombre" placeholder="Tu Nombre" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <input type="text" id="perfil-apellido" placeholder="Tu Apellido" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
-            
             <p style="color: #666; font-size: 14px;">Correo: <strong id="perfil-email"></strong></p>
             <div style="display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
                 <button id="btn-guardar-perfil" class="btn-verde" style="flex: 1;">Guardar Cambios</button>
                 <button id="btn-cerrar-perfil" class="btn-rojo" style="flex: 1;">Cerrar Panel</button>
             </div>
-            <!-- Nuevo botón rojo sólido -->
             <button id="btn-logout" class="btn-rojo-solido" style="width: 100%; margin-top: 10px;">Cerrar sesión de mi cuenta</button>
         </div>
 
@@ -137,8 +133,11 @@
         </div>
     </div>
 
-    <!-- BOTÓN FLOTANTE PARA CELULARES -->
-    <a href="#panel-derecho-usuario" id="btn-flotante-carrito">🛒 Ver Carrito (0)</a>
+    <!-- NUEVO BOTÓN FLOTANTE PARA CELULARES (CIRCULAR CON NOTIFICACIÓN) -->
+    <a href="#panel-derecho-usuario" id="btn-flotante-carrito">
+        🛒
+        <span id="cantidad-flotante">0</span>
+    </a>
 
     <script type="module" src="app.js"></script>
 </body>

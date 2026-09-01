@@ -192,20 +192,23 @@ window.agregarAlCarrito = function(id) {
 window.quitarDelCarrito = function(index) { carrito.splice(index, 1); renderizarCarrito(); }
 
 function renderizarCarrito() {
-    const contenedor = document.getElementById('contenido-carrito'); const spanTotal = document.getElementById('total-carrito'); const btnConfirmar = document.getElementById('btn-confirmar-reserva');
-    const btnFlotante = document.getElementById('btn-flotante-carrito'); 
+    const contenedor = document.getElementById('contenido-carrito'); 
+    const spanTotal = document.getElementById('total-carrito'); 
+    const btnConfirmar = document.getElementById('btn-confirmar-reserva');
+    const burbujaNotificacion = document.getElementById('cantidad-flotante'); 
+    
     contenedor.innerHTML = ''; let total = 0;
 
     if (carrito.length === 0) {
         contenedor.innerHTML = '<p style="color: #7f8c8d; text-align: center;">El carrito está vacío</p>';
         spanTotal.textContent = '0.00'; btnConfirmar.disabled = true;
-        btnFlotante.classList.remove('mostrar'); 
+        burbujaNotificacion.textContent = '0'; // Globito en cero
         return;
     }
     
-    btnFlotante.classList.add('mostrar');
+    // Actualizamos el número del globito rojo
     let unidadesTotales = carrito.reduce((acc, item) => acc + item.cantidad, 0);
-    btnFlotante.textContent = `🛒 Ver Carrito (${unidadesTotales})`;
+    burbujaNotificacion.textContent = unidadesTotales;
 
     carrito.forEach((item, index) => {
         total += item.subtotal;
@@ -268,7 +271,6 @@ window.cancelarPedido = async function(idPedido) {
     if (esAdmin) cargarPedidos(); else { const { data: { session } } = await supabase.auth.getSession(); cargarMisPedidos(session.user.email); }
 }
 
-// FUNCIÓN PARA ELIMINAR REGISTROS (VÁLIDA PARA ADMIN Y CLIENTE)
 window.eliminarRegistroPedido = async function(idPedido) {
     if(!confirm("¿Seguro que quieres borrar este pedido del historial permanentemente?")) return;
     const { error } = await supabase.from('pedidos').delete().eq('id', idPedido);
@@ -337,7 +339,6 @@ async function cargarMisPedidos(email) {
             estadoHtml = `<span style="color: green; font-weight: bold;">✔ Completado</span>`; 
         } else { 
             estadoHtml = `<span style="color: red; font-weight: bold;">✖ Cancelado</span>`; 
-            // NUEVO BOTÓN PARA EL CLIENTE:
             botonEliminar = `<button onclick="window.eliminarRegistroPedido(${pedido.id})" style="background: transparent; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; text-decoration: underline; margin-top: 10px; width: 100%;">🗑️ Eliminar historial</button>`;
         }
         
