@@ -49,6 +49,14 @@
                 <input type="text" id="perfil-nombre" placeholder="Tu Nombre" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <input type="text" id="perfil-apellido" placeholder="Tu Apellido" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
+            
+            <!-- NUEVOS CAMPOS DE CONTACTO (OPCIONALES) -->
+            <p style="font-size: 13px; color: #666; margin-bottom: 5px;">Datos de contacto (Opcionales)</p>
+            <div class="perfil-inputs">
+                <input type="text" id="perfil-telefono" placeholder="📱 Teléfono" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text" id="perfil-instagram" placeholder="📸 Instagram (Ej: @tu_usuario)" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
             <p style="color: #666; font-size: 14px;">Correo: <strong id="perfil-email"></strong></p>
             <div style="display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
                 <button id="btn-guardar-perfil" class="btn-verde" style="flex: 1;">Guardar Cambios</button>
@@ -131,12 +139,23 @@
                 </div>
             </div>
         </div>
+        
+        <!-- SECCIÓN DE CONTACTO -->
+        <div id="contacto-footer" style="background: white; margin-top: 40px; margin-bottom: 40px; padding: 25px; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.12); text-align: center;">
+            <h3 style="margin-top: 0; color: #333; font-size: 22px;">📞 Contacto</h3>
+            <p style="color: #666; margin-bottom: 20px; font-size: 16px;">Para consultas, presupuestos a medida o confirmación de pagos, comunícate con nosotros:</p>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="https://wa.me/5492255410841" target="_blank" style="text-decoration: none; color: #25D366; font-weight: bold; padding: 10px; border: 1px solid #25D366; border-radius: 6px;">📱 WhatsApp</a>
+                <a href="https://instagram.com/Sebastian.3D.VG" target="_blank" style="text-decoration: none; color: #E1306C; font-weight: bold; padding: 10px; border: 1px solid #E1306C; border-radius: 6px;">📸 Instagram</a>
+                <a href="mailto:sebastian.3d.vg@gmail.com" style="text-decoration: none; color: #3483fa; font-weight: bold; padding: 10px; border: 1px solid #3483fa; border-radius: 6px;">✉️ Correo</a>
+            </div>
+        </div>
+
     </div>
 
-    <!-- NUEVO BOTÓN FLOTANTE PARA CELULARES (CIRCULAR CON NOTIFICACIÓN) -->
+    <!-- BOTÓN FLOTANTE PARA CELULARES -->
     <a href="#panel-derecho-usuario" id="btn-flotante-carrito">
-        🛒
-        <span id="cantidad-flotante">0</span>
+        🛒<span id="cantidad-flotante">0</span>
     </a>
 
     <script type="module" src="app.js"></script>

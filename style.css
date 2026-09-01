@@ -1,6 +1,7 @@
 /* ==========================================
    ESTILO INSPIRADO EN MERCADO LIBRE
    ========================================== */
+
 body { 
     font-family: 'Proxima Nova', -apple-system, 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; 
     background: #ebebeb; 
@@ -79,6 +80,7 @@ select, input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-
 /* ==========================================
    MEJORAS DE PERFIL, MÓVIL Y BOTÓN FLOTANTE
    ========================================== */
+   
 html { scroll-behavior: smooth; }
 
 /* Botón rojo sólido */

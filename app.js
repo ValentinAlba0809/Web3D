@@ -9,6 +9,9 @@ const appContainer = document.getElementById('app-container');
 const authMensaje = document.getElementById('auth-mensaje');
 const contenedorProductos = document.getElementById('lista-productos');
 
+// LISTA DE ADMINISTRADORES (Puedes agregar más correos separados por comas)
+const correosAdmin = ['valentin@admin.com', 'sebastian.3d.vg@gmail.com'];
+
 let esAdmin = false;
 let modoInvitado = true; 
 let productosActuales = []; 
@@ -63,12 +66,16 @@ async function verificarSesion() {
         btnPerfil.classList.remove('oculto');
         document.getElementById('panel-derecho-usuario').classList.remove('oculto');
         
+        // Cargar los datos del cliente, incluyendo los nuevos (teléfono e instagram)
         const meta = session.user.user_metadata || {};
         document.getElementById('perfil-nombre').value = meta.nombre || '';
         document.getElementById('perfil-apellido').value = meta.apellido || '';
+        document.getElementById('perfil-telefono').value = meta.telefono || '';
+        document.getElementById('perfil-instagram').value = meta.instagram || '';
         document.getElementById('perfil-email').textContent = session.user.email;
 
-        if (session.user.email === 'valentin@admin.com') {
+        // VERIFICAMOS SI EL USUARIO ESTÁ EN LA LISTA DE ADMINS
+        if (correosAdmin.includes(session.user.email)) {
             adminPanel.classList.remove('oculto'); adminPedidos.classList.remove('oculto'); clientePedidos.classList.add('oculto');
             esAdmin = true; cargarPedidos();
         } else {
@@ -115,9 +122,18 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 
 document.getElementById('btn-perfil').addEventListener('click', () => { document.getElementById('perfil-modal').classList.toggle('oculto'); });
 document.getElementById('btn-cerrar-perfil').addEventListener('click', () => { document.getElementById('perfil-modal').classList.add('oculto'); });
+
+// Guardar los nuevos datos de contacto
 document.getElementById('btn-guardar-perfil').addEventListener('click', async () => {
     const btn = document.getElementById('btn-guardar-perfil'); btn.textContent = "Guardando..."; btn.disabled = true;
-    const { data, error } = await supabase.auth.updateUser({ data: { nombre: document.getElementById('perfil-nombre').value, apellido: document.getElementById('perfil-apellido').value } });
+    const { data, error } = await supabase.auth.updateUser({ 
+        data: { 
+            nombre: document.getElementById('perfil-nombre').value, 
+            apellido: document.getElementById('perfil-apellido').value,
+            telefono: document.getElementById('perfil-telefono').value,
+            instagram: document.getElementById('perfil-instagram').value
+        } 
+    });
     if (error) alert("Error al guardar: " + error.message); else alert("¡Perfil actualizado con éxito!");
     btn.textContent = "Guardar Cambios"; btn.disabled = false;
 });
@@ -192,21 +208,19 @@ window.agregarAlCarrito = function(id) {
 window.quitarDelCarrito = function(index) { carrito.splice(index, 1); renderizarCarrito(); }
 
 function renderizarCarrito() {
-    const contenedor = document.getElementById('contenido-carrito'); 
-    const spanTotal = document.getElementById('total-carrito'); 
-    const btnConfirmar = document.getElementById('btn-confirmar-reserva');
+    const contenedor = document.getElementById('contenido-carrito'); const spanTotal = document.getElementById('total-carrito'); const btnConfirmar = document.getElementById('btn-confirmar-reserva');
+    const btnFlotante = document.getElementById('btn-flotante-carrito'); 
     const burbujaNotificacion = document.getElementById('cantidad-flotante'); 
-    
     contenedor.innerHTML = ''; let total = 0;
 
     if (carrito.length === 0) {
         contenedor.innerHTML = '<p style="color: #7f8c8d; text-align: center;">El carrito está vacío</p>';
         spanTotal.textContent = '0.00'; btnConfirmar.disabled = true;
-        burbujaNotificacion.textContent = '0'; // Globito en cero
+        btnFlotante.classList.remove('mostrar'); burbujaNotificacion.textContent = '0';
         return;
     }
     
-    // Actualizamos el número del globito rojo
+    btnFlotante.classList.add('mostrar');
     let unidadesTotales = carrito.reduce((acc, item) => acc + item.cantidad, 0);
     burbujaNotificacion.textContent = unidadesTotales;
 
@@ -233,10 +247,28 @@ document.getElementById('btn-confirmar-reserva').addEventListener('click', async
 
     const btnConfirmar = document.getElementById('btn-confirmar-reserva'); btnConfirmar.textContent = "Procesando..."; btnConfirmar.disabled = true;
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
-    const nombreCliente = session.user.user_metadata?.nombre || session.user.email;
-    const { error: errorPedido } = await supabase.from('pedidos').insert([{ usuario_email: nombreCliente + " (" + session.user.email + ")", productos_comprados: carrito, total: total, estado: 'Pendiente' }]);
+    
+    // Obtenemos los datos completos del cliente
+    const meta = session.user.user_metadata || {};
+    const nombreCompleto = ((meta.nombre || '') + " " + (meta.apellido || '')).trim();
+    const emailMostrar = nombreCompleto ? `${nombreCompleto} (${session.user.email})` : session.user.email;
+    
+    // Creamos el JSON con sus datos de contacto
+    const contactoInfo = {
+        email: session.user.email,
+        telefono: meta.telefono || 'No especificó',
+        instagram: meta.instagram || 'No especificó'
+    };
 
-    if (errorPedido) { alert("Error al procesar reserva."); btnConfirmar.textContent = "Confirmar Reserva"; btnConfirmar.disabled = false; return; }
+    const { error: errorPedido } = await supabase.from('pedidos').insert([{ 
+        usuario_email: emailMostrar, 
+        contacto: contactoInfo, 
+        productos_comprados: carrito, 
+        total: total, 
+        estado: 'Pendiente' 
+    }]);
+
+    if (errorPedido) { alert("Error al procesar reserva. Asegúrate de haber ejecutado el código SQL para agregar la columna 'contacto'."); btnConfirmar.textContent = "Confirmar Reserva"; btnConfirmar.disabled = false; return; }
 
     for (let item of carrito) {
         const productoOriginal = productosActuales.find(p => p.id === item.id); let nuevoStock = productoOriginal.stock - item.cantidad; let nuevosColores = { ...productoOriginal.stock_colores };
@@ -244,9 +276,13 @@ document.getElementById('btn-confirmar-reserva').addEventListener('click', async
         await supabase.from('productos').update({ stock: nuevoStock, stock_colores: nuevosColores }).eq('id', item.id);
     }
 
-    alert("¡Reserva confirmada con éxito!\n\nPor favor, envíanos un mensaje por Instagram para coordinar la entrega.\n\nTu pedido ha sido guardado.");
+    alert("¡Reserva confirmada con éxito!\n\nPor favor, contáctate con nosotros para confirmar el método de pago y coordinar la entrega:\n\n📱 WhatsApp: +54 9 2255-410841\n📸 Instagram: @sebastian.3d.vg\n✉️ Correo: sebastian.3d.vg@gmail.com\n\nTu pedido ha sido guardado en tu panel.");
+    
     carrito = []; renderizarCarrito(); cargarProductos(); 
-    if (esAdmin) cargarPedidos(); else cargarMisPedidos(session.user.email);
+    if (esAdmin) cargarPedidos(); else {
+        cargarMisPedidos(session.user.email);
+        setTimeout(() => { document.getElementById('cliente-pedidos').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+    }
     btnConfirmar.textContent = "Confirmar Reserva";
 });
 
@@ -307,10 +343,26 @@ function renderizarPedidos() {
         
         const botonBorrarRegistro = `<button onclick="window.eliminarRegistroPedido(${pedido.id})" style="background: transparent; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; text-decoration: underline; margin-top: 10px; width: 100%;">🗑️ Eliminar del registro</button>`;
 
+        let tel = pedido.contacto?.telefono || 'No especificó';
+        let ig = pedido.contacto?.instagram || 'No especificó';
+        let email = pedido.contacto?.email || pedido.usuario_email;
+        
+        let contactoHtml = `
+            <details style="margin-top: 10px; cursor: pointer; background: #f4f6f7; padding: 8px; border-radius: 4px; border: 1px solid #d5dbdb;">
+                <summary style="color: #2980b9; font-weight: bold; font-size: 0.9em; outline: none;">📞 Ver datos de contacto</summary>
+                <div style="margin-top: 8px; font-size: 0.85em; color: #333; display: flex; flex-direction: column; gap: 5px;">
+                    <span>✉️ <strong>Correo:</strong> ${email}</span>
+                    <span>📱 <strong>Teléfono:</strong> ${tel}</span>
+                    <span>📸 <strong>Instagram:</strong> ${ig}</span>
+                </div>
+            </details>
+        `;
+
         const div = document.createElement('div'); div.style.cssText = "background: white; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.9em;";
         div.innerHTML = `<div style="margin-bottom: 8px;"><strong>Orden #${pedido.id}</strong><br><span style="color: #666;">👤 ${pedido.usuario_email}</span><br>
             <span style="color: #555; display: block; margin: 5px 0;">🛒 ${resumenProductos}</span><span style="color: #27ae60; font-weight: bold; font-size: 1.1em;">Total: $${pedido.total}</span></div>
             <div style="display: flex; gap: 5px; justify-content: space-between; border-top: 1px solid #eee; padding-top: 8px;">${botones}</div>
+            ${contactoHtml}
             ${botonBorrarRegistro}`;
         contenedorPedidos.appendChild(div);
     });
@@ -324,7 +376,7 @@ window.cambiarEstadoPedido = async function(idPedido, nuevoEstado) {
 }
 
 async function cargarMisPedidos(email) {
-    const { data: misPedidos, error } = await supabase.from('pedidos').select('*').eq('usuario_email', email).order('fecha', { ascending: false });
+    const { data: misPedidos, error } = await supabase.from('pedidos').select('*').ilike('usuario_email', `%${email}%`).order('fecha', { ascending: false });
     if (error) return; const contenedor = document.getElementById('lista-mis-pedidos'); contenedor.innerHTML = '';
     if (misPedidos.length === 0) { contenedor.innerHTML = '<p style="color: #666; text-align: center;">No tienes pedidos aún.</p>'; return; }
 
