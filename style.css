@@ -12,7 +12,7 @@ body {
 
 /* Cabecera Amarilla */
 .header-app { 
-    background-color: #74ffb2; 
+    background-color: #ffbb00; 
     padding: 15px 40px; 
     display: flex; 
     justify-content: space-between; 
@@ -95,7 +95,7 @@ html { scroll-behavior: smooth; }
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: #3483fa;
+    background: #ff9900;
     color: white;
     width: 65px;
     height: 65px;
