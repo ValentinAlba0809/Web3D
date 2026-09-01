@@ -10,7 +10,7 @@ const authMensaje = document.getElementById('auth-mensaje');
 const contenedorProductos = document.getElementById('lista-productos');
 
 let esAdmin = false;
-let modoInvitado = true; // Por defecto todos son invitados
+let modoInvitado = true; 
 let productosActuales = []; 
 let carrito = []; 
 let todosLosPedidos = [];
@@ -22,7 +22,6 @@ let modoRegistro = false;
 document.getElementById('btn-toggle-auth').addEventListener('click', () => {
     modoRegistro = !modoRegistro;
     document.getElementById('campos-registro').classList.toggle('oculto');
-    
     if (modoRegistro) {
         document.getElementById('auth-titulo').textContent = "Crear Cuenta";
         document.getElementById('auth-subtitulo').textContent = "Completa tus datos para registrarte";
@@ -38,17 +37,11 @@ document.getElementById('btn-toggle-auth').addEventListener('click', () => {
     }
 });
 
-// Botón de la barra de navegación para ir al Login
 document.getElementById('btn-nav-login').addEventListener('click', () => {
-    appContainer.classList.add('oculto');
-    authContainer.classList.remove('oculto');
-    authMensaje.textContent = "";
+    appContainer.classList.add('oculto'); authContainer.classList.remove('oculto'); authMensaje.textContent = "";
 });
-
-// Botón para cancelar el login y volver a mirar la tienda
 document.getElementById('btn-volver-tienda').addEventListener('click', () => {
-    authContainer.classList.add('oculto');
-    appContainer.classList.remove('oculto');
+    authContainer.classList.add('oculto'); appContainer.classList.remove('oculto');
 });
 
 // ==========================================
@@ -59,21 +52,15 @@ async function verificarSesion() {
     const adminPanel = document.getElementById('admin-panel');
     const adminPedidos = document.getElementById('admin-pedidos');
     const clientePedidos = document.getElementById('cliente-pedidos');
-    
     const btnNavLogin = document.getElementById('btn-nav-login');
     const btnPerfil = document.getElementById('btn-perfil');
-    const btnLogout = document.getElementById('btn-logout');
 
-    // La tienda siempre es visible por defecto al cargar
-    authContainer.classList.add('oculto');
-    appContainer.classList.remove('oculto');
+    authContainer.classList.add('oculto'); appContainer.classList.remove('oculto');
 
     if (session) {
-        // USUARIO LOGUEADO
         modoInvitado = false;
         btnNavLogin.classList.add('oculto');
         btnPerfil.classList.remove('oculto');
-        btnLogout.classList.remove('oculto');
         document.getElementById('panel-derecho-usuario').classList.remove('oculto');
         
         const meta = session.user.user_metadata || {};
@@ -82,94 +69,55 @@ async function verificarSesion() {
         document.getElementById('perfil-email').textContent = session.user.email;
 
         if (session.user.email === 'valentin@admin.com') {
-            adminPanel.classList.remove('oculto');
-            adminPedidos.classList.remove('oculto');
-            clientePedidos.classList.add('oculto');
-            esAdmin = true;
-            cargarPedidos();
+            adminPanel.classList.remove('oculto'); adminPedidos.classList.remove('oculto'); clientePedidos.classList.add('oculto');
+            esAdmin = true; cargarPedidos();
         } else {
-            adminPanel.classList.add('oculto');
-            adminPedidos.classList.add('oculto');
-            clientePedidos.classList.remove('oculto');
-            esAdmin = false;
-            cargarMisPedidos(session.user.email);
+            adminPanel.classList.add('oculto'); adminPedidos.classList.add('oculto'); clientePedidos.classList.remove('oculto');
+            esAdmin = false; cargarMisPedidos(session.user.email);
         }
     } else {
-        // INVITADO
-        modoInvitado = true;
-        esAdmin = false;
-        
-        btnNavLogin.classList.remove('oculto');
-        btnPerfil.classList.add('oculto');
-        btnLogout.classList.add('oculto');
-        
-        adminPanel.classList.add('oculto');
-        adminPedidos.classList.add('oculto');
-        clientePedidos.classList.add('oculto');
+        modoInvitado = true; esAdmin = false;
+        btnNavLogin.classList.remove('oculto'); btnPerfil.classList.add('oculto');
+        adminPanel.classList.add('oculto'); adminPedidos.classList.add('oculto'); clientePedidos.classList.add('oculto');
     }
-    
     cargarProductos();
 }
 
 document.getElementById('btn-register').addEventListener('click', async () => {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const nombre = document.getElementById('reg-nombre').value;
-    const apellido = document.getElementById('reg-apellido').value;
-
-    if (!nombre || !apellido || !email || !password) {
-        authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Por favor, completa todos los campos."; return;
-    }
+    const email = document.getElementById('email').value; const password = document.getElementById('password').value;
+    const nombre = document.getElementById('reg-nombre').value; const apellido = document.getElementById('reg-apellido').value;
+    if (!nombre || !apellido || !email || !password) { authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Por favor, completa todos los campos."; return; }
 
     authMensaje.style.color = "#333"; authMensaje.textContent = "Registrando...";
-    
-    const { data, error } = await supabase.auth.signUp({ 
-        email, password,
-        options: { data: { nombre: nombre, apellido: apellido } } 
-    });
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { nombre, apellido } } });
 
-    if (error) {
-        authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Error: " + error.message;
-    } else {
-        if (!data.session) {
-            authMensaje.style.color = "green"; 
-            authMensaje.textContent = "¡Registro exitoso! Revisa tu correo para verificar tu cuenta antes de entrar.";
-        } else {
-            authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Iniciando sesión...";
-            verificarSesion(); 
-        }
+    if (error) { authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Error: " + error.message; } 
+    else {
+        if (!data.session) { authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Revisa tu correo para verificar tu cuenta."; } 
+        else { authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Iniciando sesión..."; verificarSesion(); }
     }
 });
 
 document.getElementById('btn-login').addEventListener('click', async () => {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value; const password = document.getElementById('password').value;
     authMensaje.textContent = "Verificando...";
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { 
-        authMensaje.style.color = "#e74c3c"; 
-        authMensaje.textContent = (error.message.includes("Email not confirmed")) ? "Debes verificar tu correo antes de entrar." : "Credenciales incorrectas."; 
-    } 
+    if (error) { authMensaje.style.color = "#e74c3c"; authMensaje.textContent = (error.message.includes("Email not confirmed")) ? "Debes verificar tu correo antes de entrar." : "Credenciales incorrectas."; } 
     else { authMensaje.textContent = ""; verificarSesion(); }
 });
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
     await supabase.auth.signOut();
-    document.getElementById('email').value = '';
-    document.getElementById('password').value = '';
-    carrito = []; // El carrito sí se borra al cerrar sesión
-    renderizarCarrito(); 
-    verificarSesion(); 
+    document.getElementById('email').value = ''; document.getElementById('password').value = '';
+    document.getElementById('perfil-modal').classList.add('oculto');
+    carrito = []; renderizarCarrito(); verificarSesion(); 
 });
 
-// Lógica de perfil
 document.getElementById('btn-perfil').addEventListener('click', () => { document.getElementById('perfil-modal').classList.toggle('oculto'); });
 document.getElementById('btn-cerrar-perfil').addEventListener('click', () => { document.getElementById('perfil-modal').classList.add('oculto'); });
 document.getElementById('btn-guardar-perfil').addEventListener('click', async () => {
     const btn = document.getElementById('btn-guardar-perfil'); btn.textContent = "Guardando..."; btn.disabled = true;
-    const { data, error } = await supabase.auth.updateUser({
-        data: { nombre: document.getElementById('perfil-nombre').value, apellido: document.getElementById('perfil-apellido').value }
-    });
+    const { data, error } = await supabase.auth.updateUser({ data: { nombre: document.getElementById('perfil-nombre').value, apellido: document.getElementById('perfil-apellido').value } });
     if (error) alert("Error al guardar: " + error.message); else alert("¡Perfil actualizado con éxito!");
     btn.textContent = "Guardar Cambios"; btn.disabled = false;
 });
@@ -179,56 +127,40 @@ document.getElementById('btn-guardar-perfil').addEventListener('click', async ()
 // ==========================================
 async function cargarProductos() {
     const { data: productos, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
-    if (error) return;
-    productosActuales = productos;
-    renderizarProductos(productosActuales);
+    if (error) return; productosActuales = productos; renderizarProductos(productosActuales);
 }
 
 function renderizarProductos(productos) {
     contenedorProductos.innerHTML = ''; 
     productos.forEach(producto => {
         const div = document.createElement('div'); div.className = 'producto-card';
-        
         const botonesAdmin = esAdmin ? `
             <div style="display: flex; gap: 5px; margin-top: 10px;">
                 <button onclick="window.editarProducto(${producto.id})" class="btn-verde" style="flex: 1; background: #f39c12; padding: 8px;">✏️ Editar</button>
                 <button onclick="window.eliminarProducto(${producto.id})" class="btn-rojo" style="flex: 1; padding: 8px;">🗑️ Eliminar</button>
-            </div>
-        ` : '';
+            </div>` : '';
 
-        let selectColoresHTML = '';
+        let selectColoresHTML = ''; let botonDeshabilitado = producto.stock === 0 ? 'disabled' : ''; let textoBoton = producto.stock === 0 ? 'Sin stock' : 'Agregar al Carrito';
         let hasColors = producto.stock_colores && Object.keys(producto.stock_colores).length > 0;
-        let botonDeshabilitado = producto.stock === 0 ? 'disabled' : '';
-        let textoBoton = producto.stock === 0 ? 'Sin stock' : 'Agregar al Carrito';
-
+        
         if (hasColors) {
             let opciones = '';
             for (const [color, cant] of Object.entries(producto.stock_colores)) {
                 if (cant > 0) opciones += `<option value="${color}">${color} (Disponibles: ${cant})</option>`;
             }
-            if (opciones === '') {
-                opciones = `<option disabled>Agotado en todos los colores</option>`;
-                botonDeshabilitado = 'disabled';
-                textoBoton = 'Agotado';
-            }
+            if (opciones === '') { opciones = `<option disabled>Agotado en todos los colores</option>`; botonDeshabilitado = 'disabled'; textoBoton = 'Agotado'; }
             selectColoresHTML = `<select id="color-${producto.id}" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px;">${opciones}</select>`;
         }
 
-        // Todos pueden agregar al carrito, logueados o no
         div.innerHTML = `
             <img src="${producto.imagen_url || 'https://via.placeholder.com/300x250'}" alt="${producto.nombre}" class="producto-img" onerror="this.src='https://via.placeholder.com/300x250?text=Sin+Imagen'">
             <div class="producto-info">
-                <h3>${producto.nombre}</h3>
-                <p>${producto.descripcion || 'Sin descripción'}</p>
-                <p class="producto-precio">$${producto.precio || 0}</p>
-                <p class="stock-info">Stock total: ${producto.stock}</p>
+                <h3>${producto.nombre}</h3><p>${producto.descripcion || 'Sin descripción'}</p><p class="producto-precio">$${producto.precio || 0}</p><p class="stock-info">Stock total: ${producto.stock}</p>
             </div>
             <div class="producto-acciones">
                 ${selectColoresHTML}
                 <input type="number" id="cant-${producto.id}" value="1" min="1" max="${producto.stock}" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
-                <button onclick="window.agregarAlCarrito(${producto.id})" ${botonDeshabilitado} class="btn-verde" style="width: 100%;">
-                    ${textoBoton}
-                </button>
+                <button onclick="window.agregarAlCarrito(${producto.id})" ${botonDeshabilitado} class="btn-verde" style="width: 100%;">${textoBoton}</button>
                 ${botonesAdmin}
             </div>
         `;
@@ -240,29 +172,19 @@ function renderizarProductos(productos) {
 // CARRITO Y RESERVAS
 // ==========================================
 window.agregarAlCarrito = function(id) {
-    const producto = productosActuales.find(p => p.id === id);
-    const inputCantidad = document.getElementById(`cant-${id}`);
-    const cantidadPedida = parseInt(inputCantidad.value);
-    
-    let colorSeleccionado = null;
-    let hasColors = producto.stock_colores && Object.keys(producto.stock_colores).length > 0;
-    
+    const producto = productosActuales.find(p => p.id === id); const inputCantidad = document.getElementById(`cant-${id}`); const cantidadPedida = parseInt(inputCantidad.value);
+    let colorSeleccionado = null; let hasColors = producto.stock_colores && Object.keys(producto.stock_colores).length > 0;
     if (hasColors) {
-        const selectColor = document.getElementById(`color-${id}`);
-        colorSeleccionado = selectColor.value;
+        colorSeleccionado = document.getElementById(`color-${id}`).value;
         if (!colorSeleccionado) { alert("Color agotado o no seleccionado."); return; }
     }
-
     let stockDisponible = hasColors ? producto.stock_colores[colorSeleccionado] : producto.stock;
     const idEnCarrito = colorSeleccionado ? `${id}-${colorSeleccionado}` : `${id}`;
     const cantidadEnCarrito = carrito.filter(item => item.cartItemId === idEnCarrito).reduce((acc, item) => acc + item.cantidad, 0);
     
-    if ((cantidadPedida + cantidadEnCarrito) > stockDisponible) {
-        alert(`Stock insuficiente de esa variante. Solo quedan ${stockDisponible}.`); return;
-    }
+    if ((cantidadPedida + cantidadEnCarrito) > stockDisponible) { alert(`Stock insuficiente de esa variante. Solo quedan ${stockDisponible}.`); return; }
 
     const nombreCart = colorSeleccionado ? `${producto.nombre} (${colorSeleccionado})` : producto.nombre;
-
     carrito.push({ cartItemId: idEnCarrito, id: producto.id, color: colorSeleccionado, nombre: nombreCart, precio: producto.precio, cantidad: cantidadPedida, subtotal: producto.precio * cantidadPedida });
     inputCantidad.value = 1; renderizarCarrito();
 }
@@ -270,15 +192,21 @@ window.agregarAlCarrito = function(id) {
 window.quitarDelCarrito = function(index) { carrito.splice(index, 1); renderizarCarrito(); }
 
 function renderizarCarrito() {
-    const contenedor = document.getElementById('contenido-carrito');
-    const spanTotal = document.getElementById('total-carrito');
-    const btnConfirmar = document.getElementById('btn-confirmar-reserva');
+    const contenedor = document.getElementById('contenido-carrito'); const spanTotal = document.getElementById('total-carrito'); const btnConfirmar = document.getElementById('btn-confirmar-reserva');
+    const btnFlotante = document.getElementById('btn-flotante-carrito'); 
     contenedor.innerHTML = ''; let total = 0;
 
     if (carrito.length === 0) {
         contenedor.innerHTML = '<p style="color: #7f8c8d; text-align: center;">El carrito está vacío</p>';
-        spanTotal.textContent = '0.00'; btnConfirmar.disabled = true; return;
+        spanTotal.textContent = '0.00'; btnConfirmar.disabled = true;
+        btnFlotante.classList.remove('mostrar'); 
+        return;
     }
+    
+    btnFlotante.classList.add('mostrar');
+    let unidadesTotales = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+    btnFlotante.textContent = `🛒 Ver Carrito (${unidadesTotales})`;
+
     carrito.forEach((item, index) => {
         total += item.subtotal;
         const div = document.createElement('div'); div.className = 'carrito-item';
@@ -289,40 +217,26 @@ function renderizarCarrito() {
     spanTotal.textContent = total.toFixed(2); btnConfirmar.disabled = false;
 }
 
-// Botón de confirmar reserva: El filtro más importante
 document.getElementById('btn-confirmar-reserva').addEventListener('click', async () => {
     if (carrito.length === 0) return;
-    
     const { data: { session } } = await supabase.auth.getSession();
     
-    // Si no está logueado, lo mandamos a la pantalla de login sin borrar su carrito
     if (!session) {
         alert("¡Tu carrito está listo! Por favor, inicia sesión o regístrate para confirmar tu reserva.");
-        appContainer.classList.add('oculto');
-        authContainer.classList.remove('oculto');
-        document.getElementById('auth-mensaje').style.color = "#3483fa";
-        document.getElementById('auth-mensaje').textContent = "Inicia sesión para completar tu compra.";
+        appContainer.classList.add('oculto'); authContainer.classList.remove('oculto');
+        document.getElementById('auth-mensaje').style.color = "#3483fa"; document.getElementById('auth-mensaje').textContent = "Inicia sesión para completar tu compra.";
         return;
     }
 
-    // Si está logueado, procesamos la compra normal
-    const btnConfirmar = document.getElementById('btn-confirmar-reserva');
-    btnConfirmar.textContent = "Procesando..."; btnConfirmar.disabled = true;
-
+    const btnConfirmar = document.getElementById('btn-confirmar-reserva'); btnConfirmar.textContent = "Procesando..."; btnConfirmar.disabled = true;
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
     const nombreCliente = session.user.user_metadata?.nombre || session.user.email;
-
-    const { error: errorPedido } = await supabase.from('pedidos').insert([{
-        usuario_email: nombreCliente + " (" + session.user.email + ")", 
-        productos_comprados: carrito, total: total, estado: 'Pendiente'
-    }]);
+    const { error: errorPedido } = await supabase.from('pedidos').insert([{ usuario_email: nombreCliente + " (" + session.user.email + ")", productos_comprados: carrito, total: total, estado: 'Pendiente' }]);
 
     if (errorPedido) { alert("Error al procesar reserva."); btnConfirmar.textContent = "Confirmar Reserva"; btnConfirmar.disabled = false; return; }
 
     for (let item of carrito) {
-        const productoOriginal = productosActuales.find(p => p.id === item.id);
-        let nuevoStock = productoOriginal.stock - item.cantidad;
-        let nuevosColores = { ...productoOriginal.stock_colores };
+        const productoOriginal = productosActuales.find(p => p.id === item.id); let nuevoStock = productoOriginal.stock - item.cantidad; let nuevosColores = { ...productoOriginal.stock_colores };
         if (item.color && nuevosColores[item.color] !== undefined) nuevosColores[item.color] -= item.cantidad;
         await supabase.from('productos').update({ stock: nuevoStock, stock_colores: nuevosColores }).eq('id', item.id);
     }
@@ -334,15 +248,13 @@ document.getElementById('btn-confirmar-reserva').addEventListener('click', async
 });
 
 // ==========================================
-// GESTIÓN DE PEDIDOS Y ADMIN (SIN CAMBIOS)
+// GESTIÓN Y LIMPIEZA DE PEDIDOS
 // ==========================================
 window.cancelarPedido = async function(idPedido) {
     if(!confirm("¿Seguro que quieres cancelar este pedido? El stock será devuelto.")) return;
     const { data: pedido, error: errorPedido } = await supabase.from('pedidos').select('*').eq('id', idPedido).single();
     if (errorPedido) return;
-    
     await supabase.from('pedidos').update({ estado: 'Cancelado' }).eq('id', idPedido);
-    
     for (let item of pedido.productos_comprados) {
         const { data: prodActual } = await supabase.from('productos').select('stock, stock_colores').eq('id', item.id).single();
         if (prodActual) {
@@ -356,17 +268,25 @@ window.cancelarPedido = async function(idPedido) {
     if (esAdmin) cargarPedidos(); else { const { data: { session } } = await supabase.auth.getSession(); cargarMisPedidos(session.user.email); }
 }
 
+// FUNCIÓN PARA ELIMINAR REGISTROS (VÁLIDA PARA ADMIN Y CLIENTE)
+window.eliminarRegistroPedido = async function(idPedido) {
+    if(!confirm("¿Seguro que quieres borrar este pedido del historial permanentemente?")) return;
+    const { error } = await supabase.from('pedidos').delete().eq('id', idPedido);
+    if (error) alert("Error al eliminar: " + error.message);
+    else {
+        if (esAdmin) cargarPedidos(); 
+        else { const { data: { session } } = await supabase.auth.getSession(); cargarMisPedidos(session.user.email); }
+    }
+}
+
 async function cargarPedidos() {
     if (!esAdmin) return;
     const { data: pedidos, error } = await supabase.from('pedidos').select('*').order('fecha', { ascending: false });
-    if (error) return;
-    todosLosPedidos = pedidos; renderizarPedidos();
+    if (error) return; todosLosPedidos = pedidos; renderizarPedidos();
 }
 
 function renderizarPedidos() {
-    const contenedorPedidos = document.getElementById('lista-pedidos');
-    const filtroActual = document.getElementById('filtro-pedidos').value;
-    contenedorPedidos.innerHTML = '';
+    const contenedorPedidos = document.getElementById('lista-pedidos'); const filtroActual = document.getElementById('filtro-pedidos').value; contenedorPedidos.innerHTML = '';
     const pedidosFiltrados = todosLosPedidos.filter(pedido => { if (filtroActual === 'Todos') return true; return pedido.estado === filtroActual; });
 
     if (pedidosFiltrados.length === 0) { contenedorPedidos.innerHTML = '<p style="color: #666; text-align: center;">No hay pedidos.</p>'; return; }
@@ -382,10 +302,14 @@ function renderizarPedidos() {
         } else {
             botones = `<span style="color: red; font-weight: bold; font-size: 0.9em; text-align: center; width: 100%;">✖ Cancelado</span>`;
         }
+        
+        const botonBorrarRegistro = `<button onclick="window.eliminarRegistroPedido(${pedido.id})" style="background: transparent; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; text-decoration: underline; margin-top: 10px; width: 100%;">🗑️ Eliminar del registro</button>`;
+
         const div = document.createElement('div'); div.style.cssText = "background: white; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.9em;";
         div.innerHTML = `<div style="margin-bottom: 8px;"><strong>Orden #${pedido.id}</strong><br><span style="color: #666;">👤 ${pedido.usuario_email}</span><br>
             <span style="color: #555; display: block; margin: 5px 0;">🛒 ${resumenProductos}</span><span style="color: #27ae60; font-weight: bold; font-size: 1.1em;">Total: $${pedido.total}</span></div>
-            <div style="display: flex; gap: 5px; justify-content: space-between; border-top: 1px solid #eee; padding-top: 8px;">${botones}</div>`;
+            <div style="display: flex; gap: 5px; justify-content: space-between; border-top: 1px solid #eee; padding-top: 8px;">${botones}</div>
+            ${botonBorrarRegistro}`;
         contenedorPedidos.appendChild(div);
     });
 }
@@ -399,26 +323,34 @@ window.cambiarEstadoPedido = async function(idPedido, nuevoEstado) {
 
 async function cargarMisPedidos(email) {
     const { data: misPedidos, error } = await supabase.from('pedidos').select('*').eq('usuario_email', email).order('fecha', { ascending: false });
-    if (error) return;
-    const contenedor = document.getElementById('lista-mis-pedidos'); contenedor.innerHTML = '';
+    if (error) return; const contenedor = document.getElementById('lista-mis-pedidos'); contenedor.innerHTML = '';
     if (misPedidos.length === 0) { contenedor.innerHTML = '<p style="color: #666; text-align: center;">No tienes pedidos aún.</p>'; return; }
 
     misPedidos.forEach(pedido => {
-        let resumenProductos = pedido.productos_comprados.map(p => `${p.cantidad}x ${p.nombre}`).join(', ');
-        let estadoHtml = ''; let botonCancelar = '';
+        let resumenProductos = pedido.productos_comprados.map(p => `${p.cantidad}x ${p.nombre}`).join(', '); 
+        let estadoHtml = ''; let botonCancelar = ''; let botonEliminar = '';
+        
         if (pedido.estado === 'Pendiente') {
             estadoHtml = `<span style="color: #d35400; font-weight: bold;">⏳ Pendiente</span>`;
             botonCancelar = `<button onclick="window.cancelarPedido(${pedido.id})" class="btn-rojo" style="padding: 5px; font-size: 0.8em; width: 100%; margin-top: 5px;">❌ Cancelar Pedido</button>`;
-        } else if (pedido.estado === 'Completado') { estadoHtml = `<span style="color: green; font-weight: bold;">✔ Completado</span>`; } 
-        else { estadoHtml = `<span style="color: red; font-weight: bold;">✖ Cancelado</span>`; }
+        } else if (pedido.estado === 'Completado') { 
+            estadoHtml = `<span style="color: green; font-weight: bold;">✔ Completado</span>`; 
+        } else { 
+            estadoHtml = `<span style="color: red; font-weight: bold;">✖ Cancelado</span>`; 
+            // NUEVO BOTÓN PARA EL CLIENTE:
+            botonEliminar = `<button onclick="window.eliminarRegistroPedido(${pedido.id})" style="background: transparent; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; text-decoration: underline; margin-top: 10px; width: 100%;">🗑️ Eliminar historial</button>`;
+        }
         
         const div = document.createElement('div'); div.style.cssText = "background: #f8f9f9; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.9em;";
         div.innerHTML = `<div style="margin-bottom: 5px;"><strong>Orden #${pedido.id}</strong><br><span style="color: #555; display: block; margin: 3px 0;">🛒 ${resumenProductos}</span><span style="color: #27ae60; font-weight: bold;">Total: $${pedido.total}</span></div>
-            <div style="border-top: 1px solid #eee; padding-top: 5px; text-align: center;">${estadoHtml}${botonCancelar}</div>`;
+            <div style="border-top: 1px solid #eee; padding-top: 5px; text-align: center;">${estadoHtml}${botonCancelar}${botonEliminar}</div>`;
         contenedor.appendChild(div);
     });
 }
 
+// ==========================================
+// ADMIN: EDITAR Y PUBLICAR PRODUCTO
+// ==========================================
 window.eliminarProducto = async function(id) {
     if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
         const { error } = await supabase.from('productos').delete().eq('id', id);
@@ -426,47 +358,38 @@ window.eliminarProducto = async function(id) {
     }
 }
 window.editarProducto = function(id) {
-    const producto = productosActuales.find(p => p.id === id);
-    if (!producto) return;
-
-    document.getElementById('edit-producto-id').value = producto.id;
-    document.getElementById('titulo-panel-admin').textContent = "✏️ Editar Producto 3D";
-    document.getElementById('nuevo-nombre').value = producto.nombre;
-    document.getElementById('nuevo-descripcion').value = producto.descripcion;
-    document.getElementById('nuevo-precio').value = producto.precio;
-
+    const producto = productosActuales.find(p => p.id === id); if (!producto) return;
+    document.getElementById('edit-producto-id').value = producto.id; document.getElementById('titulo-panel-admin').textContent = "✏️ Editar Producto 3D";
+    document.getElementById('nuevo-nombre').value = producto.nombre; document.getElementById('nuevo-descripcion').value = producto.descripcion; document.getElementById('nuevo-precio').value = producto.precio;
     const contenedorColores = document.getElementById('contenedor-colores'); contenedorColores.innerHTML = '';
     
     if (producto.stock_colores && Object.keys(producto.stock_colores).length > 0) {
         for (const [color, cant] of Object.entries(producto.stock_colores)) {
-            const div = document.createElement('div'); div.className = 'color-item'; div.style.cssText = 'display: flex; gap: 10px; margin-top: 10px;';
-            div.innerHTML = `<input type="text" value="${color}" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
-                <input type="number" value="${cant}" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
+            const div = document.createElement('div'); div.className = 'color-item';
+            div.innerHTML = `<input type="text" value="${color}" class="input-color" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="number" value="${cant}" min="0" class="input-stock" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #e74c3c; font-size: 16px; cursor: pointer; padding: 0 10px;">✖</button>`;
             contenedorColores.appendChild(div);
         }
     } else { document.getElementById('btn-add-color').click(); }
-
-    document.getElementById('btn-agregar').textContent = "Guardar Cambios";
-    document.getElementById('btn-cancelar-edicion').classList.remove('oculto');
+    document.getElementById('btn-agregar').textContent = "Guardar Cambios"; document.getElementById('btn-cancelar-edicion').classList.remove('oculto');
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
 }
 
 document.getElementById('btn-cancelar-edicion').addEventListener('click', () => {
     document.getElementById('edit-producto-id').value = ''; document.getElementById('titulo-panel-admin').textContent = "Publicar Nuevo Producto 3D";
     document.getElementById('nuevo-nombre').value = ''; document.getElementById('nuevo-descripcion').value = ''; document.getElementById('nuevo-precio').value = ''; document.getElementById('nuevo-imagen').value = '';
-    document.getElementById('contenedor-colores').innerHTML = `<div class="color-item" style="display: flex; gap: 10px;">
-            <input type="text" placeholder="Color (Ej: PLA Blanco)" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
-            <input type="number" placeholder="Stock" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
+    document.getElementById('contenedor-colores').innerHTML = `<div class="color-item">
+            <input type="text" placeholder="Color (Ej: PLA Blanco)" class="input-color" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="number" placeholder="Stock" min="0" class="input-stock" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
         </div>`;
     document.getElementById('btn-agregar').textContent = "Publicar Producto"; document.getElementById('btn-cancelar-edicion').classList.add('oculto');
 });
 
 document.getElementById('btn-add-color').addEventListener('click', () => {
-    const contenedor = document.getElementById('contenedor-colores');
-    const div = document.createElement('div'); div.className = 'color-item'; div.style.cssText = 'display: flex; gap: 10px; margin-top: 10px;';
-    div.innerHTML = `<input type="text" placeholder="Color (Ej: PLA Negro)" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
-        <input type="number" placeholder="Stock" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
+    const contenedor = document.getElementById('contenedor-colores'); const div = document.createElement('div'); div.className = 'color-item'; 
+    div.innerHTML = `<input type="text" placeholder="Color (Ej: PLA Negro)" class="input-color" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        <input type="number" placeholder="Stock" min="0" class="input-stock" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
         <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #e74c3c; font-size: 16px; cursor: pointer; padding: 0 10px;">✖</button>`;
     contenedor.appendChild(div);
 });

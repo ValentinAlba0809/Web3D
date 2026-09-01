@@ -81,3 +81,57 @@ select, input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-
 #auth-container { max-width: 400px; background: white; padding: 40px; margin-top: 50px; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.12); text-align: center; }
 #auth-container input { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
 .auth-buttons { display: flex; flex-direction: column; gap: 10px; }
+
+/* ==========================================
+   MEJORAS DE NAVEGACIÓN Y RESPONSIVE (MÓVIL)
+   ========================================== */
+
+/* Comportamiento suave al hacer scroll (para el botón flotante) */
+html { scroll-behavior: smooth; }
+
+/* Estilo para las variantes de color */
+.color-item { display: flex; gap: 10px; margin-bottom: 10px; width: 100%; align-items: center; }
+
+/* Botón flotante para ver carrito en celular */
+#btn-flotante-carrito {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #3483fa;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 1000;
+}
+#btn-flotante-carrito:hover { background: #2968c8; }
+
+/* REGLAS PARA CELULARES */
+@media (max-width: 768px) {
+    /* Mostramos el botón flotante solo en celular si tiene la clase "mostrar" */
+    #btn-flotante-carrito.mostrar { display: block; }
+    
+    /* Apilamos color y stock en vertical */
+    .color-item { flex-direction: column; align-items: stretch; }
+    .color-item button { width: 100%; padding: 10px; border: 1px solid #e74c3c !important; margin-top: 5px; }
+}
+
+/* ==========================================
+   MEJORAS DEL PERFIL Y BOTÓN ROJO SÓLIDO
+   ========================================== */
+
+/* Botón rojo sólido (Mismo estilo que Guardar Cambios) */
+.btn-rojo-solido { background: #e74c3c; color: white; border: none; font-weight: 600; padding: 12px 20px; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+.btn-rojo-solido:hover { background: #c0392b; }
+
+/* Contenedor de inputs del perfil */
+.perfil-inputs { display: flex; gap: 10px; margin-bottom: 15px; }
+
+/* En celulares, apilamos nombre y apellido */
+@media (max-width: 768px) {
+    .perfil-inputs { flex-direction: column; }
+    .perfil-inputs input { width: 100%; box-sizing: border-box; }
+}

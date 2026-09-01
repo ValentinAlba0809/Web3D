@@ -8,12 +8,11 @@
 </head>
 <body>
     
-    <!-- 1. PANTALLA DE LOGIN Y REGISTRO (Oculta por defecto ahora) -->
+    <!-- PANTALLA DE LOGIN Y REGISTRO -->
     <div id="auth-container" class="container oculto">
         <h2 id="auth-titulo">Iniciar Sesión</h2>
         <p id="auth-subtitulo">Ingresa para confirmar tu reserva y ver tus pedidos</p>
         
-        <!-- Campos exclusivos de registro -->
         <div id="campos-registro" class="oculto">
             <input type="text" id="reg-nombre" placeholder="Nombre">
             <input type="text" id="reg-apellido" placeholder="Apellido">
@@ -32,33 +31,34 @@
         <p id="auth-mensaje" class="mensaje-error" style="margin-top: 15px;"></p>
     </div>
 
-    <!-- 2. PANTALLA PRINCIPAL (La Tienda) -->
+    <!-- PANTALLA PRINCIPAL (La Tienda) -->
     <div id="app-container" class="container">
         
         <div class="header-app">
             <h1>Tienda 3D</h1>
             <div style="display: flex; gap: 10px;">
-                <!-- Botón para los que no iniciaron sesión -->
                 <button id="btn-nav-login" style="background: white; color: #3483fa; border: 1px solid #3483fa;">Iniciar Sesión / Registrarme</button>
-                
-                <!-- Botones para los que ya están logueados -->
                 <button id="btn-perfil" class="oculto" style="background: white; color: #333;">👤 Mi Perfil</button>
-                <button id="btn-logout" class="btn-rojo oculto">Cerrar sesión</button>
             </div>
         </div>
 
         <!-- MODAL DE PERFIL -->
         <div id="perfil-modal" class="oculto" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #ddd;">
             <h3 style="margin-top: 0;">👤 Mis Datos</h3>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <input type="text" id="perfil-nombre" placeholder="Tu Nombre" style="flex: 1;">
-                <input type="text" id="perfil-apellido" placeholder="Tu Apellido" style="flex: 1;">
+            
+            <!-- Contenedor responsivo para el celular -->
+            <div class="perfil-inputs">
+                <input type="text" id="perfil-nombre" placeholder="Tu Nombre" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text" id="perfil-apellido" placeholder="Tu Apellido" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
+            
             <p style="color: #666; font-size: 14px;">Correo: <strong id="perfil-email"></strong></p>
-            <div style="display: flex; gap: 10px;">
-                <button id="btn-guardar-perfil" class="btn-verde">Guardar Cambios</button>
-                <button id="btn-cerrar-perfil" class="btn-rojo">Cerrar</button>
+            <div style="display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                <button id="btn-guardar-perfil" class="btn-verde" style="flex: 1;">Guardar Cambios</button>
+                <button id="btn-cerrar-perfil" class="btn-rojo" style="flex: 1;">Cerrar Panel</button>
             </div>
+            <!-- Nuevo botón rojo sólido -->
+            <button id="btn-logout" class="btn-rojo-solido" style="width: 100%; margin-top: 10px;">Cerrar sesión de mi cuenta</button>
         </div>
 
         <!-- PANEL ADMIN: AGREGAR / EDITAR PRODUCTOS -->
@@ -77,9 +77,9 @@
                 <div style="flex: 1; min-width: 280px; background: #f5f5f5; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
                     <label style="font-size: 14px; color: #666; margin-bottom: 10px; display: block;">Variantes de Color y Stock</label>
                     <div id="contenedor-colores" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-                        <div class="color-item" style="display: flex; gap: 10px;">
-                            <input type="text" placeholder="Color (Ej: PLA Blanco)" class="input-color" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
-                            <input type="number" placeholder="Stock" min="0" class="input-stock" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin: 0;">
+                        <div class="color-item">
+                            <input type="text" placeholder="Color (Ej: PLA Blanco)" class="input-color" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="number" placeholder="Stock" min="0" class="input-stock" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
                     </div>
                     <button id="btn-add-color" style="background: transparent; color: #3483fa; width: 100%; padding: 10px; border: 1px dashed #3483fa; border-radius: 6px; margin-bottom: 10px;">+ Añadir otro color</button>
@@ -136,6 +136,9 @@
             </div>
         </div>
     </div>
+
+    <!-- BOTÓN FLOTANTE PARA CELULARES -->
+    <a href="#panel-derecho-usuario" id="btn-flotante-carrito">🛒 Ver Carrito (0)</a>
 
     <script type="module" src="app.js"></script>
 </body>
