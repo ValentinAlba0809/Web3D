@@ -100,7 +100,7 @@ document.getElementById('btn-register').addEventListener('click', async () => {
 
     if (error) { authMensaje.style.color = "#e74c3c"; authMensaje.textContent = "Error: " + error.message; } 
     else {
-        if (!data.session) { authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Revisa tu correo para verificar tu cuenta."; } 
+        if (!data.session) { authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Revisa tu correo para verificar tu cuenta a este correo: noreply@mail.app.supabase.io."; } 
         else { authMensaje.style.color = "green"; authMensaje.textContent = "¡Registro exitoso! Iniciando sesión..."; verificarSesion(); }
     }
 });
